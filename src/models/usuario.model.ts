@@ -61,7 +61,7 @@ export const UsuarioModel = {
       const hashedPassword = await AuthService.hashPassword(usuario.passw);
       
       const [result] = await pool.query(
-        'INSERT INTO cuentas (nombreUser, emailUser, tlfUser, passw, roleUser, estatus) VALUES (?, ?, ?, ?, ?, ?)',
+        'INSERT INTO cuentasusuarios (nombreUser, emailUser, tlfUser, passw, roleUser, estatus) VALUES (?, ?, ?, ?, ?, ?)',
         [
           usuario.nombreUser,
           usuario.emailUser,

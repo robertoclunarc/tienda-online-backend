@@ -18,6 +18,7 @@ import tiendaRoutes from './routes/tienda.routes';
 import financiamientoRoutes from './routes/financiamiento.routes';
 import contactoRoutes from './routes/contacto.routes';
 import authRoutes from './routes/auth.routes';
+import productosImagenesRoutes from './routes/productosImagenes.routes';
 
 // Cargar variables de entorno
 dotenv.config();
@@ -46,6 +47,7 @@ app.use('/api/tiendas', tiendaRoutes);
 app.use('/api/financiamientos', financiamientoRoutes);
 app.use('/api/contactos', contactoRoutes);
 app.use('/api/auth', authRoutes);
+app.use('/api/productos-imagenes', productosImagenesRoutes);
 
 // Ruta de prueba
 app.get('/', (req, res) => {
