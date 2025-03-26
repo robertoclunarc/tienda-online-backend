@@ -1,3 +1,35 @@
+import { Pool } from 'pg';
+import dotenv from 'dotenv';
+
+dotenv.config();
+
+// Configuración del pool de conexiones a PostgreSQL
+const pool = new Pool({
+  user: process.env.DB_USER || 'postgres',
+  host: process.env.DB_HOST || 'localhost',
+  database: process.env.DB_DATABASE || 'cecomsa',
+  password: process.env.DB_PASSWORD || 'postgres',
+  port: parseInt(process.env.DB_PORT || '5432'),
+  max: 20, // Máximo de conexiones en el pool
+  idleTimeoutMillis: 30000, // Tiempo máximo que una conexión puede estar inactiva
+  connectionTimeoutMillis: 2000, // Tiempo de espera para establecer una conexión
+  ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : undefined
+});
+
+// Función para probar la conexión
+export const testConnection = async (): Promise<void> => {
+  try {
+    const client = await pool.connect();
+    console.log('Conexión a PostgreSQL establecida correctamente');
+    client.release();
+  } catch (error) {
+    console.error('Error al conectar a PostgreSQL:', error);
+    throw error;
+  }
+};
+
+export default pool;
+/*
 import mysql from 'mysql2/promise';
 import dotenv from 'dotenv';
 
@@ -27,3 +59,4 @@ export const testConnection = async (): Promise<void> => {
 };
 
 export default pool;
+*/

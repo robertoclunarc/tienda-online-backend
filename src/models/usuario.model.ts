@@ -1,175 +1,198 @@
-export interface Usuario {
-  idCuentaUser?: number;
-  nombreUser: string | null;
-  emailUser: string;
-  tlfUser: string | null;
-  passw: string;
-  estatus: string;
-  roleUser?: string; // Rol del usuario (admin, user, etc.)
+export interface Venta {
+  idVenta?: number;
+  fechaVenta?: Date;
+  fkCuentaUser: number;
+  subTotalVenta?: string;
+  montoTotalVenta: string;
+  fkFinanciamiento?: number | null;
+  porcImpuesto?: string;
+  montoImpuesto?: string;
+  estatusVenta?: string;
 }
 
-// Omitir contraseña para respuestas
-export type UsuarioSinPassword = Omit<Usuario, 'passw'>;
+export interface DetalleVenta {
+  idDetalle?: number;
+  fkVenta: number;
+  fkProducto: number;
+  precioUnitario: string;
+  cantProducto: number;
+  subTotal: string;
+}
+
+export interface VentaConDetalles extends Venta {
+  detalles?: DetalleVenta[];
+  nombreUsuario?: string;
+  emailUsuario?: string;
+}
 
 import pool from '../config/db.config';
-import bcrypt from 'bcryptjs';
-import { AuthService } from '../services/auth.service';
 
-export const UsuarioModel = {
-  // Obtener todos los usuarios
-  findAll: async (): Promise<UsuarioSinPassword[]> => {
-    try {
-      const [rows] = await pool.query(`
-        SELECT idCuentaUser, nombreUser, emailUser, tlfUser, estatus, roleUser 
-        FROM cuentasusuarios
-      `);
-      return rows as UsuarioSinPassword[];
-    } catch (error) {
-      console.error('Error al obtener usuarios:', error);
-      throw error;
-    }
+export const VentaModel = {
+  // Obtener todas las ventas
+  findAll: async (): Promise<VentaConDetalles[]> => {
+      try {
+          const { rows } = await pool.query(`
+              SELECT v.*, u.nombreUser as nombreUsuario, u.emailUser as emailUsuario
+              FROM ventas v
+              JOIN cuentasusuarios u ON v.fkCuentaUser = u.idCuentaUser
+              ORDER BY v.fechaVenta DESC
+          `);
+          return rows as VentaConDetalles[];
+      } catch (error) {
+          console.error('Error al obtener ventas:', error);
+          throw error;
+      }
   },
 
-  // Obtener un usuario por ID
-  findById: async (id: number): Promise<Usuario | null> => {
-    try {
-      const [rows] = await pool.query('SELECT * FROM cuentasusuarios WHERE idCuentaUser = ?', [id]);
-      const usuarios = rows as Usuario[];
-      return usuarios.length > 0 ? usuarios[0] : null;
-    } catch (error) {
-      console.error(`Error al obtener usuario con ID ${id}:`, error);
-      throw error;
-    }
+  // Obtener una venta por ID con sus detalles
+  findById: async (id: number): Promise<VentaConDetalles | null> => {
+      try {
+          // Obtener info de la venta
+          const { rows: ventaRows } = await pool.query(`
+              SELECT v.*, u.nombreUser as nombreUsuario, u.emailUser as emailUsuario
+              FROM ventas v
+              JOIN cuentasusuarios u ON v.fkCuentaUser = u.idCuentaUser
+              WHERE v.idVenta = $1
+          `, [id]);
+          
+          if (ventaRows.length === 0) {
+              return null;
+          }
+          
+          // Obtener detalles de la venta
+          const { rows: detallesRows } = await pool.query(`
+              SELECT d.*, p.nombreProducto
+              FROM detallesventas d
+              JOIN productos p ON d.fkProducto = p.idProducto
+              WHERE d.fkVenta = $1
+          `, [id]);
+          
+          const venta = ventaRows[0] as VentaConDetalles;
+          venta.detalles = detallesRows as DetalleVenta[];
+          return venta;
+      } catch (error) {
+          console.error(`Error al obtener venta con ID ${id}:`, error);
+          throw error;
+      }
   },
 
-  // Encontrar usuario por email (incluye password para autenticación)
-  findByEmail: async (email: string): Promise<Usuario | null> => {
-    try {
-      const [rows] = await pool.query('SELECT * FROM cuentasusuarios WHERE emailUser = ?', [email]);
-      const usuarios = rows as Usuario[];
-      return usuarios.length > 0 ? usuarios[0] : null;
-    } catch (error) {
-      console.error(`Error al buscar usuario por email ${email}:`, error);
-      throw error;
-    }
+  // Obtener ventas de un usuario
+  findByUsuario: async (usuarioId: number): Promise<Venta[]> => {
+      try {
+          const { rows } = await pool.query(`
+              SELECT * FROM ventas 
+              WHERE fkCuentaUser = $1 
+              ORDER BY fechaVenta DESC
+          `, [usuarioId]);
+          return rows as Venta[];
+      } catch (error) {
+          console.error(`Error al obtener ventas del usuario ${usuarioId}:`, error);
+          throw error;
+      }
   },
 
-  // Crear un nuevo usuario
-  register: async (usuario: Usuario): Promise<number> => {
-    try {
-      // Hash de la contraseña
-      const hashedPassword = await AuthService.hashPassword(usuario.passw);
+  // Crear una nueva venta
+  create: async (venta: Venta, detalles: Omit<DetalleVenta, 'idDetalle' | 'fkVenta'>[]): Promise<number> => {
+      const client = await pool.connect();
       
-      const [result] = await pool.query(
-        'INSERT INTO cuentasusuarios (nombreUser, emailUser, tlfUser, passw, roleUser, estatus) VALUES (?, ?, ?, ?, ?, ?)',
-        [
-          usuario.nombreUser,
-          usuario.emailUser,
-          usuario.tlfUser,
-          hashedPassword,
-          usuario.roleUser || 'user', // Por defecto, rol de usuario normal
-          usuario.estatus || 'ACTIVO'
-        ]
-      );
-      
-      const result2 = result as { insertId: number };
-      return result2.insertId;
-    } catch (error) {
-      console.error('Error al registrar usuario:', error);
-      throw error;
-    }
+      try {
+          await client.query('BEGIN');
+          
+          // Insertar la venta
+          const { rows: ventaRows } = await client.query(`
+              INSERT INTO ventas 
+              (fechaVenta, fkCuentaUser, subTotalVenta, montoTotalVenta, fkFinanciamiento, porcImpuesto, montoImpuesto, estatusVenta) 
+              VALUES (NOW(), $1, $2, $3, $4, $5, $6, $7)
+              RETURNING idVenta
+          `, [
+              venta.fkCuentaUser,
+              venta.subTotalVenta || '0.0',
+              venta.montoTotalVenta,
+              venta.fkFinanciamiento || null,
+              venta.porcImpuesto || '0.0',
+              venta.montoImpuesto || '0.0',
+              venta.estatusVenta || 'ACTIVO'
+          ]);
+          
+          const ventaId = ventaRows[0].idventa;
+          
+          // Insertar los detalles de la venta
+          for (const detalle of detalles) {
+              await client.query(`
+                  INSERT INTO detallesventas 
+                  (fkVenta, fkProducto, precioUnitario, cantProducto, subTotal) 
+                  VALUES ($1, $2, $3, $4, $5)
+              `, [
+                  ventaId,
+                  detalle.fkProducto,
+                  detalle.precioUnitario,
+                  detalle.cantProducto,
+                  detalle.subTotal
+              ]);
+              
+              // Actualizar inventario
+              await client.query(`
+                  UPDATE productos 
+                  SET cantInventario = cantInventario - $1 
+                  WHERE idProducto = $2
+              `, [detalle.cantProducto, detalle.fkProducto]);
+          }
+          
+          await client.query('COMMIT');
+          return ventaId;
+      } catch (error) {
+          await client.query('ROLLBACK');
+          console.error('Error al crear venta:', error);
+          throw error;
+      } finally {
+          client.release();
+      }
   },
 
-  // Cambiar contraseña de usuario
-  changePassword: async (userId: number, newPassword: string): Promise<boolean> => {
-    try {
-      // Hash de la nueva contraseña
-      const hashedPassword = await AuthService.hashPassword(newPassword);
-      
-      const [result] = await pool.query(
-        'UPDATE cuentasusuarios SET passw = ? WHERE idCuentaUser = ?',
-        [hashedPassword, userId]
-      );
-      
-      const { affectedRows } = result as { affectedRows: number };
-      return affectedRows > 0;
-    } catch (error) {
-      console.error(`Error al cambiar contraseña del usuario ${userId}:`, error);
-      throw error;
-    }
+  // Actualizar estatus de una venta
+  updateEstatus: async (id: number, estatus: string): Promise<boolean> => {
+      try {
+          const { rowCount } = await pool.query(
+              'UPDATE ventas SET estatusVenta = $1 WHERE idVenta = $2', 
+              [estatus, id]
+          );
+          return rowCount !== null && rowCount > 0;
+      } catch (error) {
+          console.error(`Error al actualizar estatus de venta con ID ${id}:`, error);
+          throw error;
+      }
   },
 
-  // Actualizar un usuario
-  update: async (id: number, usuario: Partial<Usuario>): Promise<boolean> => {
-    try {
-      let query = 'UPDATE cuentasusuarios SET ';
-      const updates: string[] = [];
-      const values: any[] = [];
-
-      // Construimos dinámicamente la consulta
-      if (usuario.nombreUser !== undefined) {
-        updates.push('nombreUser = ?');
-        values.push(usuario.nombreUser);
+  // Obtener estadísticas de ventas
+  getEstadisticas: async (): Promise<{
+      totalVentas: number;
+      montoTotal: string;
+      promedioVenta: string;
+  }> => {
+      try {
+          const { rows } = await pool.query(`
+              SELECT 
+                  COUNT(*) as totalVentas,
+                  SUM(montoTotalVenta) as montoTotal,
+                  AVG(montoTotalVenta) as promedioVenta
+              FROM ventas
+              WHERE estatusVenta = 'ACTIVO'
+          `);
+          
+          const result = rows[0] as {
+              totalventas: number;
+              montototal: string;
+              promedioventa: string;
+          };
+          
+          return {
+              totalVentas: result.totalventas || 0,
+              montoTotal: result.montototal || '0.00',
+              promedioVenta: result.promedioventa || '0.00'
+          };
+      } catch (error) {
+          console.error('Error al obtener estadísticas de ventas:', error);
+          throw error;
       }
-      if (usuario.emailUser !== undefined) {
-        updates.push('emailUser = ?');
-        values.push(usuario.emailUser);
-      }
-      if (usuario.tlfUser !== undefined) {
-        updates.push('tlfUser = ?');
-        values.push(usuario.tlfUser);
-      }
-      if (usuario.passw !== undefined) {
-        // Hashear la nueva contraseña
-        const salt = await bcrypt.genSalt(10);
-        const hashedPassword = await bcrypt.hash(usuario.passw, salt);
-        
-        updates.push('passw = ?');
-        values.push(hashedPassword);
-      }
-      if (usuario.estatus !== undefined) {
-        updates.push('estatus = ?');
-        values.push(usuario.estatus);
-      }
-
-      // Si no hay nada que actualizar
-      if (updates.length === 0) {
-        return false;
-      }
-
-      query += updates.join(', ') + ' WHERE idCuentaUser = ?';
-      values.push(id);
-
-      const [result] = await pool.query(query, values);
-      const { affectedRows } = result as { affectedRows: number };
-      return affectedRows > 0;
-    } catch (error) {
-      console.error(`Error al actualizar usuario con ID ${id}:`, error);
-      throw error;
-    }
-  },
-
-  // Eliminar un usuario (cambiar estatus a INACTIVO)
-  delete: async (id: number): Promise<boolean> => {
-    try {
-      const [result] = await pool.query('UPDATE cuentasusuarios SET estatus = ? WHERE idCuentaUser = ?', ['INACTIVO', id]);
-      const { affectedRows } = result as { affectedRows: number };
-      return affectedRows > 0;
-    } catch (error) {
-      console.error(`Error al eliminar usuario con ID ${id}:`, error);
-      throw error;
-    }
-  },
-
-  // Verificar si existe un email
-  emailExists: async (email: string): Promise<boolean> => {
-    try {
-      const [rows] = await pool.query('SELECT COUNT(*) as count FROM cuentasusuarios WHERE emailUser = ?', [email]);
-      const result = rows as [{ count: number }];
-      return result[0].count > 0;
-    } catch (error) {
-      console.error(`Error al verificar existencia de email ${email}:`, error);
-      throw error;
-    }
   }
 };

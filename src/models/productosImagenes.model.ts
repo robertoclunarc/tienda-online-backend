@@ -4,8 +4,8 @@ export interface ProductoImagen {
   idImagen?: number;
   descImagen?: string;
   imagen: string;
-  miniatura?: number; // 1 o 0 para true o false
-  principal?: number; // 1 o 0 para true o false
+  miniatura?: boolean;
+  principal?: boolean;
   fkProducto: number;
 }
 
@@ -13,8 +13,8 @@ export const ProductoImagenModel = {
   // Obtener todas las imágenes de un producto
   findByProductId: async (productoId: number): Promise<ProductoImagen[]> => {
     try {
-      const [rows] = await pool.query(
-        'SELECT * FROM productosimagenes WHERE fkProducto = ?',
+      const { rows } = await pool.query(
+        'SELECT * FROM productosimagenes WHERE fkProducto = $1',
         [productoId]
       );
       return rows as ProductoImagen[];
@@ -27,12 +27,11 @@ export const ProductoImagenModel = {
   // Obtener la imagen principal de un producto
   findMainImageByProductId: async (productoId: number): Promise<ProductoImagen | null> => {
     try {
-      const [rows] = await pool.query(
-        'SELECT * FROM productosimagenes WHERE fkProducto = ? AND principal = 1 LIMIT 1',
+      const { rows } = await pool.query(
+        'SELECT * FROM productosimagenes WHERE fkProducto = $1 AND principal = true LIMIT 1',
         [productoId]
       );
-      const images = rows as ProductoImagen[];
-      return images.length > 0 ? images[0] : null;
+      return rows.length > 0 ? rows[0] : null;
     } catch (error) {
       console.error(`Error al obtener imagen principal del producto ${productoId}:`, error);
       throw error;
@@ -42,8 +41,8 @@ export const ProductoImagenModel = {
   // Obtener las miniaturas de un producto
   findThumbnailsByProductId: async (productoId: number): Promise<ProductoImagen[]> => {
     try {
-      const [rows] = await pool.query(
-        'SELECT * FROM productosimagenes WHERE fkProducto = ? AND miniatura = 1',
+      const { rows } = await pool.query(
+        'SELECT * FROM productosimagenes WHERE fkProducto = $1 AND miniatura = true',
         [productoId]
       );
       return rows as ProductoImagen[];
@@ -56,9 +55,11 @@ export const ProductoImagenModel = {
   // Obtener una imagen por su ID
   findById: async (id: number): Promise<ProductoImagen | null> => {
     try {
-      const [rows] = await pool.query('SELECT * FROM productosimagenes WHERE idImagen = ?', [id]);
-      const images = rows as ProductoImagen[];
-      return images.length > 0 ? images[0] : null;
+      const { rows } = await pool.query(
+        'SELECT * FROM productosimagenes WHERE idImagen = $1', 
+        [id]
+      );
+      return rows.length > 0 ? rows[0] : null;
     } catch (error) {
       console.error(`Error al obtener imagen con ID ${id}:`, error);
       throw error;
@@ -69,26 +70,28 @@ export const ProductoImagenModel = {
   create: async (imagen: ProductoImagen): Promise<number> => {
     try {
       // Si es imagen principal, asegurarse de quitar el flag principal de otras imágenes del producto
-      if (imagen.principal === 1) {
+      if (imagen.principal) {
         await pool.query(
-          'UPDATE productosimagenes SET principal = 0 WHERE fkProducto = ?',
+          'UPDATE productosimagenes SET principal = false WHERE fkProducto = $1',
           [imagen.fkProducto]
         );
       }
 
-      const [result] = await pool.query(
-        'INSERT INTO productosimagenes (descImagen, imagen, miniatura, principal, fkProducto) VALUES (?, ?, ?, ?, ?)',
+      const { rows } = await pool.query(
+        `INSERT INTO productosimagenes 
+         (descImagen, imagen, miniatura, principal, fkProducto) 
+         VALUES ($1, $2, $3, $4, $5)
+         RETURNING idImagen`,
         [
           imagen.descImagen || null,
           imagen.imagen,
-          imagen.miniatura || 0,
-          imagen.principal || 0,
+          imagen.miniatura || false,
+          imagen.principal || false,
           imagen.fkProducto
         ]
       );
       
-      const insertResult = result as { insertId: number };
-      return insertResult.insertId;
+      return rows[0].idimagen;
     } catch (error) {
       console.error('Error al crear imagen:', error);
       throw error;
@@ -99,11 +102,11 @@ export const ProductoImagenModel = {
   update: async (id: number, imagen: Partial<ProductoImagen>): Promise<boolean> => {
     try {
       // Si se está estableciendo como imagen principal, quitar el flag de otras imágenes
-      if (imagen.principal === 1) {
+      if (imagen.principal) {
         const currentImage = await ProductoImagenModel.findById(id);
         if (currentImage) {
           await pool.query(
-            'UPDATE productosimagenes SET principal = 0 WHERE fkProducto = ?',
+            'UPDATE productosimagenes SET principal = false WHERE fkProducto = $1',
             [currentImage.fkProducto]
           );
         }
@@ -113,38 +116,43 @@ export const ProductoImagenModel = {
       let updateQuery = 'UPDATE productosimagenes SET ';
       const values: any[] = [];
       const fields: string[] = [];
+      let paramCount = 1;
 
       if (imagen.descImagen !== undefined) {
-        fields.push('descImagen = ?');
+        fields.push(`descImagen = $${paramCount}`);
         values.push(imagen.descImagen);
+        paramCount++;
       }
       if (imagen.imagen !== undefined) {
-        fields.push('imagen = ?');
+        fields.push(`imagen = $${paramCount}`);
         values.push(imagen.imagen);
+        paramCount++;
       }
       if (imagen.miniatura !== undefined) {
-        fields.push('miniatura = ?');
+        fields.push(`miniatura = $${paramCount}`);
         values.push(imagen.miniatura);
+        paramCount++;
       }
       if (imagen.principal !== undefined) {
-        fields.push('principal = ?');
+        fields.push(`principal = $${paramCount}`);
         values.push(imagen.principal);
+        paramCount++;
       }
       if (imagen.fkProducto !== undefined) {
-        fields.push('fkProducto = ?');
+        fields.push(`fkProducto = $${paramCount}`);
         values.push(imagen.fkProducto);
+        paramCount++;
       }
 
       if (fields.length === 0) {
         return false; // No hay campos para actualizar
       }
 
-      updateQuery += fields.join(', ') + ' WHERE idImagen = ?';
+      updateQuery += fields.join(', ') + ` WHERE idImagen = $${paramCount}`;
       values.push(id);
 
-      const [result] = await pool.query(updateQuery, values);
-      const { affectedRows } = result as { affectedRows: number };
-      return affectedRows > 0;
+      const { rowCount } = await pool.query(updateQuery, values);
+      return rowCount !== null && rowCount > 0;
     } catch (error) {
       console.error(`Error al actualizar imagen con ID ${id}:`, error);
       throw error;
@@ -154,9 +162,11 @@ export const ProductoImagenModel = {
   // Eliminar una imagen
   delete: async (id: number): Promise<boolean> => {
     try {
-      const [result] = await pool.query('DELETE FROM productosimagenes WHERE idImagen = ?', [id]);
-      const { affectedRows } = result as { affectedRows: number };
-      return affectedRows > 0;
+      const { rowCount } = await pool.query(
+        'DELETE FROM productosimagenes WHERE idImagen = $1', 
+        [id]
+      );
+      return rowCount !== null && rowCount > 0;
     } catch (error) {
       console.error(`Error al eliminar imagen con ID ${id}:`, error);
       throw error;

@@ -23,7 +23,7 @@ export interface Producto {
     // Obtener todos los productos
     findAll: async (): Promise<ProductoConDetalles[]> => {
       try {
-        const [rows] = await pool.query(`
+        const result = await pool.query(`
           SELECT p.*, m.descMarca as nombreMarca, mo.descModelo as nombreModelo, 
                  c.descCategoria as nombreCategoria, s.descSubCategoria as nombreSubCategoria
           FROM productos p
@@ -34,7 +34,7 @@ export interface Producto {
           WHERE p.estatus = 'ACTIVO'
           ORDER BY p.idProducto DESC
         `);
-        return rows as ProductoConDetalles[];
+        return result.rows as ProductoConDetalles[];
       } catch (error) {
         console.error('Error al obtener productos:', error);
         throw error;
@@ -44,7 +44,7 @@ export interface Producto {
     // Obtener productos destacados
     findFeatured: async (limit: number = 8): Promise<ProductoConDetalles[]> => {
       try {
-        const [rows] = await pool.query(`
+        const result = await pool.query(`
           SELECT p.*, m.descMarca as nombreMarca, mo.descModelo as nombreModelo, 
                  c.descCategoria as nombreCategoria, s.descSubCategoria as nombreSubCategoria
           FROM productos p
@@ -54,9 +54,9 @@ export interface Producto {
           LEFT JOIN categorias c ON s.fkCategoria = c.idCategoria
           WHERE p.estatus = 'ACTIVO'
           ORDER BY p.idProducto DESC
-          LIMIT ?
+          LIMIT $1
         `, [limit]);
-        return rows as ProductoConDetalles[];
+        return result.rows as ProductoConDetalles[];
       } catch (error) {
         console.error('Error al obtener productos destacados:', error);
         throw error;
@@ -66,7 +66,7 @@ export interface Producto {
     // Obtener un producto por ID
     findById: async (id: number): Promise<ProductoConDetalles | null> => {
       try {
-        const [rows] = await pool.query(`
+        const result = await pool.query(`
           SELECT p.*, m.descMarca as nombreMarca, mo.descModelo as nombreModelo, 
                  c.descCategoria as nombreCategoria, s.descSubCategoria as nombreSubCategoria
           FROM productos p
@@ -74,10 +74,10 @@ export interface Producto {
           LEFT JOIN marcas m ON mo.fkMarca = m.idMarca
           LEFT JOIN subcategorias s ON p.fkSubCategoria = s.idSubCategoria
           LEFT JOIN categorias c ON s.fkCategoria = c.idCategoria
-          WHERE p.idProducto = ? AND p.estatus = 'ACTIVO'
+          WHERE p.idProducto = $1 AND p.estatus = 'ACTIVO'
         `, [id]);
         
-        const products = rows as ProductoConDetalles[];
+        const products = result.rows as ProductoConDetalles[];
         return products.length > 0 ? products[0] : null;
       } catch (error) {
         console.error(`Error al obtener producto con ID ${id}:`, error);
@@ -88,7 +88,7 @@ export interface Producto {
     // Obtener productos por categoría
     findByCategory: async (categoryId: number): Promise<ProductoConDetalles[]> => {
       try {
-        const [rows] = await pool.query(`
+        const result = await pool.query(`
           SELECT p.*, m.descMarca as nombreMarca, mo.descModelo as nombreModelo, 
                  c.descCategoria as nombreCategoria, s.descSubCategoria as nombreSubCategoria
           FROM productos p
@@ -96,9 +96,9 @@ export interface Producto {
           LEFT JOIN marcas m ON mo.fkMarca = m.idMarca
           LEFT JOIN subcategorias s ON p.fkSubCategoria = s.idSubCategoria
           LEFT JOIN categorias c ON s.fkCategoria = c.idCategoria
-          WHERE c.idCategoria = ? AND p.estatus = 'ACTIVO'
+          WHERE c.idCategoria = $1 AND p.estatus = 'ACTIVO'
         `, [categoryId]);
-        return rows as ProductoConDetalles[];
+        return result.rows as ProductoConDetalles[];
       } catch (error) {
         console.error(`Error al obtener productos por categoría ${categoryId}:`, error);
         throw error;
@@ -108,7 +108,7 @@ export interface Producto {
     // Obtener productos por subcategoría
     findBySubcategory: async (subcategoryId: number): Promise<ProductoConDetalles[]> => {
       try {
-        const [rows] = await pool.query(`
+        const result = await pool.query(`
           SELECT p.*, m.descMarca as nombreMarca, mo.descModelo as nombreModelo, 
                  c.descCategoria as nombreCategoria, s.descSubCategoria as nombreSubCategoria
           FROM productos p
@@ -116,9 +116,9 @@ export interface Producto {
           LEFT JOIN marcas m ON mo.fkMarca = m.idMarca
           LEFT JOIN subcategorias s ON p.fkSubCategoria = s.idSubCategoria
           LEFT JOIN categorias c ON s.fkCategoria = c.idCategoria
-          WHERE p.fkSubCategoria = ? AND p.estatus = 'ACTIVO'
+          WHERE p.fkSubCategoria = $1 AND p.estatus = 'ACTIVO'
         `, [subcategoryId]);
-        return rows as ProductoConDetalles[];
+        return result.rows as ProductoConDetalles[];
       } catch (error) {
         console.error(`Error al obtener productos por subcategoría ${subcategoryId}:`, error);
         throw error;
@@ -128,10 +128,11 @@ export interface Producto {
     // Crear un nuevo producto
     create: async (producto: Producto): Promise<number> => {
       try {
-        const [result] = await pool.query(`
+        const result = await pool.query(`
           INSERT INTO productos 
-          (nombreProducto, descProducto, precio, cantInventario, fkModelo, fkSubCategoria, estatus) 
-          VALUES (?, ?, ?, ?, ?, ?, ?)
+        (nombreProducto, descProducto, precio, cantInventario, fkModelo, fkSubCategoria, estatus)
+        VALUES ($1, $2, $3, $4, $5, $6, $7)
+        RETURNING idProducto
         `, [
           producto.nombreProducto, 
           producto.descProducto || null, 
@@ -142,8 +143,8 @@ export interface Producto {
           producto.estatus || 'ACTIVO'
         ]);
         
-        const result2 = result as { insertId: number };
-        return result2.insertId;
+        const result2 = result.rows[0];
+        return result2.idProducto;
       } catch (error) {
         console.error('Error al crear producto:', error);
         throw error;
@@ -153,50 +154,55 @@ export interface Producto {
     // Actualizar un producto
     update: async (id: number, producto: Partial<Producto>): Promise<boolean> => {
       try {
-        let query = 'UPDATE productos SET ';
         const updates: string[] = [];
         const values: any[] = [];
+        let paramCounter = 1; // Contador para los parámetros posicionales
   
         // Costruimos dinámicamente la consulta basada en los campos que se proporcionan
         if (producto.nombreProducto !== undefined) {
-          updates.push('nombreProducto = ?');
+          updates.push(`nombreProducto = $${paramCounter++}`);
           values.push(producto.nombreProducto);
         }
         if (producto.descProducto !== undefined) {
-          updates.push('descProducto = ?');
+          updates.push(`descProducto = $${paramCounter++}`);
           values.push(producto.descProducto);
         }
         if (producto.precio !== undefined) {
-          updates.push('precio = ?');
+          updates.push(`precio = $${paramCounter++}`);
           values.push(producto.precio);
         }
         if (producto.cantInventario !== undefined) {
-          updates.push('cantInventario = ?');
+          updates.push(`cantInventario = $${paramCounter++}`);
           values.push(producto.cantInventario);
         }
         if (producto.fkModelo !== undefined) {
-          updates.push('fkModelo = ?');
+          updates.push(`fkModelo = $${paramCounter++}`);
           values.push(producto.fkModelo);
         }
         if (producto.fkSubCategoria !== undefined) {
-          updates.push('fkSubCategoria = ?');
+          updates.push(`fkSubCategoria = $${paramCounter++}`);
           values.push(producto.fkSubCategoria);
         }
         if (producto.estatus !== undefined) {
-          updates.push('estatus = ?');
+          updates.push(`estatus = $${paramCounter++}`);
           values.push(producto.estatus);
         }
+
+        values.push(id);
   
         // Si no hay nada que actualizar, retornar false
         if (updates.length === 0) {
           return false;
         }
   
-        query += updates.join(', ') + ' WHERE idProducto = ?';
-        values.push(id);
+        const query = `
+        UPDATE productos 
+        SET ${updates.join(', ')} 
+        WHERE idProducto = $${paramCounter}
+      `;
   
-        const [result] = await pool.query(query, values);
-        const { affectedRows } = result as { affectedRows: number };
+        const result = await pool.query(query, values);
+        const affectedRows = result.rowCount || 0;
         return affectedRows > 0;
       } catch (error) {
         console.error(`Error al actualizar producto con ID ${id}:`, error);
@@ -207,8 +213,8 @@ export interface Producto {
     // Eliminar un producto (desactivarlo)
     delete: async (id: number): Promise<boolean> => {
       try {
-        const [result] = await pool.query('UPDATE productos SET estatus = ? WHERE idProducto = ?', ['INACTIVO', id]);
-        const { affectedRows } = result as { affectedRows: number };
+        const result = await pool.query('UPDATE productos SET estatus = $1 WHERE idProducto = $2', ['INACTIVO', id]);
+        const affectedRows  = result.rowCount || 0;
         return affectedRows > 0;
       } catch (error) {
         console.error(`Error al eliminar producto con ID ${id}:`, error);
@@ -220,7 +226,7 @@ export interface Producto {
     search: async (term: string): Promise<ProductoConDetalles[]> => {
       try {
         const searchTerm = `%${term}%`;
-        const [rows] = await pool.query(`
+        const rows = await pool.query(`
           SELECT p.*, m.descMarca as nombreMarca, mo.descModelo as nombreModelo, 
                  c.descCategoria as nombreCategoria, s.descSubCategoria as nombreSubCategoria
           FROM productos p
@@ -228,12 +234,12 @@ export interface Producto {
           LEFT JOIN marcas m ON mo.fkMarca = m.idMarca
           LEFT JOIN subcategorias s ON p.fkSubCategoria = s.idSubCategoria
           LEFT JOIN categorias c ON s.fkCategoria = c.idCategoria
-          WHERE (p.nombreProducto LIKE ? OR p.descProducto LIKE ? OR m.descMarca LIKE ? OR 
-                 mo.descModelo LIKE ? OR c.descCategoria LIKE ? OR s.descSubCategoria LIKE ?)
+          WHERE (p.nombreProducto LIKE $1 OR p.descProducto LIKE $2 OR m.descMarca LIKE $3 OR 
+                 mo.descModelo LIKE $4 OR c.descCategoria LIKE $5 OR s.descSubCategoria LIKE $6)
           AND p.estatus = 'ACTIVO'
         `, [searchTerm, searchTerm, searchTerm, searchTerm, searchTerm, searchTerm]);
         
-        return rows as ProductoConDetalles[];
+        return rows.rows as ProductoConDetalles[];
       } catch (error) {
         console.error(`Error al buscar productos con término "${term}":`, error);
         throw error;
