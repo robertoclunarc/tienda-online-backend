@@ -1,12 +1,12 @@
 // Interfaces para los modelos de datos
 export interface Producto {
-    idProducto?: number;
-    nombreProducto: string;
-    descProducto?: string;
+    idproducto?: number;
+    nombreproducto: string;
+    descproducto?: string;
     precio: string;
-    cantInventario: number;
-    fkModelo: number;
-    fkSubCategoria: number;
+    cantinventario: number;
+    fkmodelo: number;
+    fksubcategoria: number;
     estatus: string;
   }
   
@@ -27,12 +27,12 @@ export interface Producto {
           SELECT p.*, m.descMarca as nombreMarca, mo.descModelo as nombreModelo, 
                  c.descCategoria as nombreCategoria, s.descSubCategoria as nombreSubCategoria
           FROM productos p
-          LEFT JOIN modelos mo ON p.fkModelo = mo.idModelo
+          LEFT JOIN modelos mo ON p.fkmodelo = mo.idModelo
           LEFT JOIN marcas m ON mo.fkMarca = m.idMarca
-          LEFT JOIN subcategorias s ON p.fkSubCategoria = s.idSubCategoria
+          LEFT JOIN subcategorias s ON p.fksubcategoria = s.idSubCategoria
           LEFT JOIN categorias c ON s.fkCategoria = c.idCategoria
           WHERE p.estatus = 'ACTIVO'
-          ORDER BY p.idProducto DESC
+          ORDER BY p.idproducto DESC
         `);
         return result.rows as ProductoConDetalles[];
       } catch (error) {
@@ -48,12 +48,12 @@ export interface Producto {
           SELECT p.*, m.descMarca as nombreMarca, mo.descModelo as nombreModelo, 
                  c.descCategoria as nombreCategoria, s.descSubCategoria as nombreSubCategoria
           FROM productos p
-          LEFT JOIN modelos mo ON p.fkModelo = mo.idModelo
+          LEFT JOIN modelos mo ON p.fkmodelo = mo.idModelo
           LEFT JOIN marcas m ON mo.fkMarca = m.idMarca
-          LEFT JOIN subcategorias s ON p.fkSubCategoria = s.idSubCategoria
+          LEFT JOIN subcategorias s ON p.fksubcategoria = s.idSubCategoria
           LEFT JOIN categorias c ON s.fkCategoria = c.idCategoria
           WHERE p.estatus = 'ACTIVO'
-          ORDER BY p.idProducto DESC
+          ORDER BY p.idproducto DESC
           LIMIT $1
         `, [limit]);
         return result.rows as ProductoConDetalles[];
@@ -70,11 +70,11 @@ export interface Producto {
           SELECT p.*, m.descMarca as nombreMarca, mo.descModelo as nombreModelo, 
                  c.descCategoria as nombreCategoria, s.descSubCategoria as nombreSubCategoria
           FROM productos p
-          LEFT JOIN modelos mo ON p.fkModelo = mo.idModelo
+          LEFT JOIN modelos mo ON p.fkmodelo = mo.idModelo
           LEFT JOIN marcas m ON mo.fkMarca = m.idMarca
-          LEFT JOIN subcategorias s ON p.fkSubCategoria = s.idSubCategoria
+          LEFT JOIN subcategorias s ON p.fksubcategoria = s.idSubCategoria
           LEFT JOIN categorias c ON s.fkCategoria = c.idCategoria
-          WHERE p.idProducto = $1 AND p.estatus = 'ACTIVO'
+          WHERE p.idproducto = $1 AND p.estatus = 'ACTIVO'
         `, [id]);
         
         const products = result.rows as ProductoConDetalles[];
@@ -92,9 +92,9 @@ export interface Producto {
           SELECT p.*, m.descMarca as nombreMarca, mo.descModelo as nombreModelo, 
                  c.descCategoria as nombreCategoria, s.descSubCategoria as nombreSubCategoria
           FROM productos p
-          LEFT JOIN modelos mo ON p.fkModelo = mo.idModelo
+          LEFT JOIN modelos mo ON p.fkmodelo = mo.idModelo
           LEFT JOIN marcas m ON mo.fkMarca = m.idMarca
-          LEFT JOIN subcategorias s ON p.fkSubCategoria = s.idSubCategoria
+          LEFT JOIN subcategorias s ON p.fksubcategoria = s.idSubCategoria
           LEFT JOIN categorias c ON s.fkCategoria = c.idCategoria
           WHERE c.idCategoria = $1 AND p.estatus = 'ACTIVO'
         `, [categoryId]);
@@ -112,11 +112,11 @@ export interface Producto {
           SELECT p.*, m.descMarca as nombreMarca, mo.descModelo as nombreModelo, 
                  c.descCategoria as nombreCategoria, s.descSubCategoria as nombreSubCategoria
           FROM productos p
-          LEFT JOIN modelos mo ON p.fkModelo = mo.idModelo
+          LEFT JOIN modelos mo ON p.fkmodelo = mo.idModelo
           LEFT JOIN marcas m ON mo.fkMarca = m.idMarca
-          LEFT JOIN subcategorias s ON p.fkSubCategoria = s.idSubCategoria
+          LEFT JOIN subcategorias s ON p.fksubcategoria = s.idSubCategoria
           LEFT JOIN categorias c ON s.fkCategoria = c.idCategoria
-          WHERE p.fkSubCategoria = $1 AND p.estatus = 'ACTIVO'
+          WHERE p.fksubcategoria = $1 AND p.estatus = 'ACTIVO'
         `, [subcategoryId]);
         return result.rows as ProductoConDetalles[];
       } catch (error) {
@@ -130,21 +130,21 @@ export interface Producto {
       try {
         const result = await pool.query(`
           INSERT INTO productos 
-        (nombreProducto, descProducto, precio, cantInventario, fkModelo, fkSubCategoria, estatus)
+        (nombreproducto, descproducto, precio, cantinventario, fkmodelo, fksubcategoria, estatus)
         VALUES ($1, $2, $3, $4, $5, $6, $7)
-        RETURNING idProducto
+        RETURNING idproducto
         `, [
-          producto.nombreProducto, 
-          producto.descProducto || null, 
+          producto.nombreproducto, 
+          producto.descproducto || null, 
           producto.precio, 
-          producto.cantInventario, 
-          producto.fkModelo, 
-          producto.fkSubCategoria, 
+          producto.cantinventario, 
+          producto.fkmodelo, 
+          producto.fksubcategoria, 
           producto.estatus || 'ACTIVO'
         ]);
         
         const result2 = result.rows[0];
-        return result2.idProducto;
+        return result2.idproducto;
       } catch (error) {
         console.error('Error al crear producto:', error);
         throw error;
@@ -159,29 +159,29 @@ export interface Producto {
         let paramCounter = 1; // Contador para los parámetros posicionales
   
         // Costruimos dinámicamente la consulta basada en los campos que se proporcionan
-        if (producto.nombreProducto !== undefined) {
-          updates.push(`nombreProducto = $${paramCounter++}`);
-          values.push(producto.nombreProducto);
+        if (producto.nombreproducto !== undefined) {
+          updates.push(`nombreproducto = $${paramCounter++}`);
+          values.push(producto.nombreproducto);
         }
-        if (producto.descProducto !== undefined) {
-          updates.push(`descProducto = $${paramCounter++}`);
-          values.push(producto.descProducto);
+        if (producto.descproducto !== undefined) {
+          updates.push(`descproducto = $${paramCounter++}`);
+          values.push(producto.descproducto);
         }
         if (producto.precio !== undefined) {
           updates.push(`precio = $${paramCounter++}`);
           values.push(producto.precio);
         }
-        if (producto.cantInventario !== undefined) {
-          updates.push(`cantInventario = $${paramCounter++}`);
-          values.push(producto.cantInventario);
+        if (producto.cantinventario !== undefined) {
+          updates.push(`cantinventario = $${paramCounter++}`);
+          values.push(producto.cantinventario);
         }
-        if (producto.fkModelo !== undefined) {
-          updates.push(`fkModelo = $${paramCounter++}`);
-          values.push(producto.fkModelo);
+        if (producto.fkmodelo !== undefined) {
+          updates.push(`fkmodelo = $${paramCounter++}`);
+          values.push(producto.fkmodelo);
         }
-        if (producto.fkSubCategoria !== undefined) {
-          updates.push(`fkSubCategoria = $${paramCounter++}`);
-          values.push(producto.fkSubCategoria);
+        if (producto.fksubcategoria !== undefined) {
+          updates.push(`fksubcategoria = $${paramCounter++}`);
+          values.push(producto.fksubcategoria);
         }
         if (producto.estatus !== undefined) {
           updates.push(`estatus = $${paramCounter++}`);
@@ -198,7 +198,7 @@ export interface Producto {
         const query = `
         UPDATE productos 
         SET ${updates.join(', ')} 
-        WHERE idProducto = $${paramCounter}
+        WHERE idproducto = $${paramCounter}
       `;
   
         const result = await pool.query(query, values);
@@ -213,7 +213,7 @@ export interface Producto {
     // Eliminar un producto (desactivarlo)
     delete: async (id: number): Promise<boolean> => {
       try {
-        const result = await pool.query('UPDATE productos SET estatus = $1 WHERE idProducto = $2', ['INACTIVO', id]);
+        const result = await pool.query('UPDATE productos SET estatus = $1 WHERE idproducto = $2', ['INACTIVO', id]);
         const affectedRows  = result.rowCount || 0;
         return affectedRows > 0;
       } catch (error) {
@@ -230,11 +230,11 @@ export interface Producto {
           SELECT p.*, m.descMarca as nombreMarca, mo.descModelo as nombreModelo, 
                  c.descCategoria as nombreCategoria, s.descSubCategoria as nombreSubCategoria
           FROM productos p
-          LEFT JOIN modelos mo ON p.fkModelo = mo.idModelo
+          LEFT JOIN modelos mo ON p.fkmodelo = mo.idModelo
           LEFT JOIN marcas m ON mo.fkMarca = m.idMarca
-          LEFT JOIN subcategorias s ON p.fkSubCategoria = s.idSubCategoria
+          LEFT JOIN subcategorias s ON p.fksubcategoria = s.idSubCategoria
           LEFT JOIN categorias c ON s.fkCategoria = c.idCategoria
-          WHERE (p.nombreProducto LIKE $1 OR p.descProducto LIKE $2 OR m.descMarca LIKE $3 OR 
+          WHERE (p.nombreproducto LIKE $1 OR p.descproducto LIKE $2 OR m.descMarca LIKE $3 OR 
                  mo.descModelo LIKE $4 OR c.descCategoria LIKE $5 OR s.descSubCategoria LIKE $6)
           AND p.estatus = 'ACTIVO'
         `, [searchTerm, searchTerm, searchTerm, searchTerm, searchTerm, searchTerm]);

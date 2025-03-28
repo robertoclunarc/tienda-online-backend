@@ -7,10 +7,10 @@ dotenv.config();
 const pool = new Pool({
   user: process.env.DB_USER || 'postgres',
   host: process.env.DB_HOST || 'localhost',
-  database: process.env.DB_DATABASE || 'cecomsa',
+  database: process.env.DB_DATABASE || 'dbtiendaonline',
   password: process.env.DB_PASSWORD || 'postgres',
   port: parseInt(process.env.DB_PORT || '5432'),
-  max: 20, // Máximo de conexiones en el pool
+  //max: 20, // Máximo de conexiones en el pool
   idleTimeoutMillis: 30000, // Tiempo máximo que una conexión puede estar inactiva
   connectionTimeoutMillis: 2000, // Tiempo de espera para establecer una conexión
   ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : undefined
@@ -20,7 +20,7 @@ const pool = new Pool({
 export const testConnection = async (): Promise<void> => {
   try {
     const client = await pool.connect();
-    console.log('Conexión a PostgreSQL establecida correctamente');
+    console.log('Conexión BD establecida correctamente');
     client.release();
   } catch (error) {
     console.error('Error al conectar a PostgreSQL:', error);

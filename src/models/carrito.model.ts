@@ -1,16 +1,16 @@
 export interface Carrito {
-    idCarrito?: number;
-    fkProducto: number;
-    cantProducto: number;
-    montoTotal: string;
-    fkCuentaUser: number;
-    estatusCarrito: string;
+    idcarrito?: number;
+    fkproducto: number;
+    cantproducto: number;
+    montototal: string;
+    fkcuentauser: number;
+    estatuscarrito: string;
   }
   
   export interface CarritoConProducto extends Carrito {
-    nombreProducto?: string;
+    nombreproducto?: string;
     precio?: string;
-    nombreCategoria?: string;
+    nombrecategoria?: string;
   }
   
   import pool from '../config/db.config';
@@ -74,7 +74,7 @@ export interface Carrito {
     addToCart: async (carrito: Carrito): Promise<number> => {
       try {
         // Obtener el precio actual del producto
-        const productRows = await pool.query('SELECT precio FROM productos WHERE idProducto = $1', [carrito.fkProducto]);
+        const productRows = await pool.query('SELECT precio FROM productos WHERE idProducto = $1', [carrito.fkproducto]);
         const productos = productRows.rows as { precio: string }[];
         
         if (productos.length === 0) {
@@ -82,23 +82,23 @@ export interface Carrito {
         }
         
         const precioProducto = parseFloat(productos[0].precio);
-        const montoTotal = (precioProducto * carrito.cantProducto).toFixed(2);
+        const montoTotal = (precioProducto * carrito.cantproducto).toFixed(2);
         
         // Verificar si el producto ya está en el carrito
-        const itemExistente = await CarritoModel.findByUsuarioProducto(carrito.fkCuentaUser, carrito.fkProducto);
+        const itemExistente = await CarritoModel.findByUsuarioProducto(carrito.fkcuentauser, carrito.fkproducto);
         
         if (itemExistente) {
           // Actualizar cantidad y monto
-          const nuevaCantidad = itemExistente.cantProducto + carrito.cantProducto;
+          const nuevaCantidad = itemExistente.cantproducto + carrito.cantproducto;
           const nuevoMonto = (precioProducto * nuevaCantidad).toFixed(2);
           
           await pool.query(`
             UPDATE carritos 
             SET cantProducto = $1, montoTotal = $2 
             WHERE idCarrito = $3
-          `, [nuevaCantidad, nuevoMonto, itemExistente.idCarrito]);
+          `, [nuevaCantidad, nuevoMonto, itemExistente.idcarrito]);
           
-          return itemExistente?.idCarrito ?? 0;
+          return itemExistente?.idcarrito ?? 0;
         } else {
           // Insertar nuevo item en carrito
           const result = await pool.query(`
@@ -106,11 +106,11 @@ export interface Carrito {
             (fkProducto, cantProducto, montoTotal, fkCuentaUser, estatusCarrito) 
             VALUES ($1, $2, $3, $4, $5)
           `, [
-            carrito.fkProducto,
-            carrito.cantProducto,
+            carrito.fkproducto,
+            carrito.cantproducto,
             montoTotal,
-            carrito.fkCuentaUser,
-            carrito.estatusCarrito || 'ACTIVO'
+            carrito.fkcuentauser,
+            carrito.estatuscarrito || 'ACTIVO'
           ]);
           
           const result2 = result.rows[0];
@@ -132,7 +132,7 @@ export interface Carrito {
         }
         
         // Obtener el precio actual del producto
-        const productRows = await pool.query('SELECT precio FROM productos WHERE idProducto = 1$', [carritoItem.fkProducto]);
+        const productRows = await pool.query('SELECT precio FROM productos WHERE idProducto = 1$', [carritoItem.fkproducto]);
         const productos = productRows.rows;
         
         if (productos.length === 0) {

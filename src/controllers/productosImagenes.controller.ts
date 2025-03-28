@@ -73,7 +73,7 @@ export const productosImagenesController = {
         return;
       }
       
-      if (!imagenData.fkProducto) {
+      if (!imagenData.fkproducto) {
         res.status(400).json({ message: 'El ID del producto es requerido' });
         return;
       }

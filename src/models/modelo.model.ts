@@ -1,7 +1,7 @@
 export interface Modelo {
-  idModelo?: number;
-  descModelo: string;
-  fkMarca: number;
+  idmodelo?: number;
+  descmodelo: string;
+  fkmarca: number;
 }
 
 import pool from '../config/db.config';
@@ -13,8 +13,8 @@ export const ModeloModel = {
           const { rows } = await pool.query(`
               SELECT m.*, ma.descMarca as nombreMarca
               FROM modelos m
-              JOIN marcas ma ON m.fkMarca = ma.idMarca
-              ORDER BY m.descModelo
+              JOIN marcas ma ON m.fkmarca = ma.idMarca
+              ORDER BY m.descmodelo
           `);
           return rows as Modelo[];
       } catch (error) {
@@ -29,9 +29,9 @@ export const ModeloModel = {
           const { rows } = await pool.query(`
               SELECT m.*, ma.descMarca as nombreMarca
               FROM modelos m
-              JOIN marcas ma ON m.fkMarca = ma.idMarca
-              WHERE m.fkMarca = $1
-              ORDER BY m.descModelo
+              JOIN marcas ma ON m.fkmarca = ma.idMarca
+              WHERE m.fkmarca = $1
+              ORDER BY m.descmodelo
           `, [marcaId]);
           return rows as Modelo[];
       } catch (error) {
@@ -46,8 +46,8 @@ export const ModeloModel = {
           const { rows } = await pool.query(`
               SELECT m.*, ma.descMarca as nombreMarca
               FROM modelos m
-              JOIN marcas ma ON m.fkMarca = ma.idMarca
-              WHERE m.idModelo = $1
+              JOIN marcas ma ON m.fkmarca = ma.idMarca
+              WHERE m.idmodelo = $1
           `, [id]);
           
           return rows.length > 0 ? rows[0] : null;
@@ -61,8 +61,8 @@ export const ModeloModel = {
   create: async (modelo: Modelo): Promise<number> => {
       try {
           const { rows } = await pool.query(
-              'INSERT INTO modelos (descModelo, fkMarca) VALUES ($1, $2) RETURNING idModelo',
-              [modelo.descModelo, modelo.fkMarca]
+              'INSERT INTO modelos (descmodelo, fkmarca) VALUES ($1, $2) RETURNING idmodelo',
+              [modelo.descmodelo, modelo.fkmarca]
           );
           return rows[0].idmodelo; // PostgreSQL devuelve en minúsculas
       } catch (error) {
@@ -75,8 +75,8 @@ export const ModeloModel = {
   update: async (id: number, modelo: Modelo): Promise<boolean> => {
       try {
           const { rowCount } = await pool.query(
-              'UPDATE modelos SET descModelo = $1, fkMarca = $2 WHERE idModelo = $3',
-              [modelo.descModelo, modelo.fkMarca, id]
+              'UPDATE modelos SET descmodelo = $1, fkmarca = $2 WHERE idmodelo = $3',
+              [modelo.descmodelo, modelo.fkmarca, id]
           );
           return rowCount !== null && rowCount > 0;
       } catch (error) {
@@ -89,7 +89,7 @@ export const ModeloModel = {
   delete: async (id: number): Promise<boolean> => {
       try {
           const { rowCount } = await pool.query(
-              'DELETE FROM modelos WHERE idModelo = $1',
+              'DELETE FROM modelos WHERE idmodelo = $1',
               [id]
           );
           return rowCount !== null && rowCount > 0;

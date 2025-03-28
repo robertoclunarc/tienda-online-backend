@@ -1,7 +1,7 @@
 export interface Subcategoria {
-  idSubCategoria?: number;
-  descSubCategoria: string;
-  fkCategoria: number;
+  idsubcategoria?: number;
+  descsubcategoria: string;
+  fkcategoria: number;
 }
 
 import pool from '../config/db.config';
@@ -10,7 +10,7 @@ export const SubcategoriaModel = {
   // Obtener todas las subcategorías
   findAll: async (): Promise<Subcategoria[]> => {
       try {
-          const { rows } = await pool.query('SELECT * FROM subcategorias ORDER BY descSubCategoria');
+          const { rows } = await pool.query('SELECT * FROM subcategorias ORDER BY descsubcategoria');
           return rows as Subcategoria[];
       } catch (error) {
           console.error('Error al obtener subcategorías:', error);
@@ -22,7 +22,7 @@ export const SubcategoriaModel = {
   findByCategoria: async (categoriaId: number): Promise<Subcategoria[]> => {
       try {
           const { rows } = await pool.query(
-              'SELECT * FROM subcategorias WHERE fkCategoria = $1 ORDER BY descSubCategoria', 
+              'SELECT * FROM subcategorias WHERE fkcategoria = $1 ORDER BY descsubcategoria', 
               [categoriaId]
           );
           return rows as Subcategoria[];
@@ -36,7 +36,7 @@ export const SubcategoriaModel = {
   findById: async (id: number): Promise<Subcategoria | null> => {
       try {
           const { rows } = await pool.query(
-              'SELECT * FROM subcategorias WHERE idSubCategoria = $1', 
+              'SELECT * FROM subcategorias WHERE idsubcategoria = $1', 
               [id]
           );
           return rows.length > 0 ? rows[0] : null;
@@ -50,8 +50,8 @@ export const SubcategoriaModel = {
   create: async (subcategoria: Subcategoria): Promise<number> => {
       try {
           const { rows } = await pool.query(
-              'INSERT INTO subcategorias (descSubCategoria, fkCategoria) VALUES ($1, $2) RETURNING idSubCategoria',
-              [subcategoria.descSubCategoria, subcategoria.fkCategoria]
+              'INSERT INTO subcategorias (descsubcategoria, fkcategoria) VALUES ($1, $2) RETURNING idsubcategoria',
+              [subcategoria.descsubcategoria, subcategoria.fkcategoria]
           );
           return rows[0].idsubcategoria; // PostgreSQL devuelve en minúsculas
       } catch (error) {
@@ -64,8 +64,8 @@ export const SubcategoriaModel = {
   update: async (id: number, subcategoria: Subcategoria): Promise<boolean> => {
       try {
           const { rowCount } = await pool.query(
-              'UPDATE subcategorias SET descSubCategoria = $1, fkCategoria = $2 WHERE idSubCategoria = $3',
-              [subcategoria.descSubCategoria, subcategoria.fkCategoria, id]
+              'UPDATE subcategorias SET descsubcategoria = $1, fkcategoria = $2 WHERE idsubcategoria = $3',
+              [subcategoria.descsubcategoria, subcategoria.fkcategoria, id]
           );
           return rowCount !== null && rowCount > 0;
       } catch (error) {
@@ -78,7 +78,7 @@ export const SubcategoriaModel = {
   delete: async (id: number): Promise<boolean> => {
       try {
           const { rowCount } = await pool.query(
-              'DELETE FROM subcategorias WHERE idSubCategoria = $1',
+              'DELETE FROM subcategorias WHERE idsubcategoria = $1',
               [id]
           );
           return rowCount !== null && rowCount > 0;

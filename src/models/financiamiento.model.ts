@@ -1,9 +1,9 @@
 export interface Financiamiento {
-  idFinanciamiento?: number;
-  descFinanciamiento: string;
-  tasaFinanciamiento: string;
-  cantCuotas: number;
-  estatusFinanciamiento: string;
+  idfinanciamiento?: number;
+  descfinanciamiento: string;
+  tasafinanciamiento: string;
+  cantcuotas: number;
+  estatusfinanciamiento: string;
 }
 
 import pool from '../config/db.config';
@@ -58,10 +58,10 @@ export const FinanciamientoModel = {
               VALUES ($1, $2, $3, $4)
               RETURNING idFinanciamiento
           `, [
-              financiamiento.descFinanciamiento,
-              financiamiento.tasaFinanciamiento,
-              financiamiento.cantCuotas,
-              financiamiento.estatusFinanciamiento || 'ACTIVO'
+              financiamiento.descfinanciamiento,
+              financiamiento.tasafinanciamiento,
+              financiamiento.cantcuotas,
+              financiamiento.estatusfinanciamiento || 'ACTIVO'
           ]);
           
           return rows[0].idfinanciamiento; // PostgreSQL devuelve en minúsculas
@@ -79,24 +79,24 @@ export const FinanciamientoModel = {
           const values: any[] = [];
           let paramCount = 1;
 
-          if (financiamiento.descFinanciamiento !== undefined) {
+          if (financiamiento.descfinanciamiento !== undefined) {
               updates.push(`descFinanciamiento = $${paramCount}`);
-              values.push(financiamiento.descFinanciamiento);
+              values.push(financiamiento.descfinanciamiento);
               paramCount++;
           }
-          if (financiamiento.tasaFinanciamiento !== undefined) {
+          if (financiamiento.tasafinanciamiento !== undefined) {
               updates.push(`tasaFinanciamiento = $${paramCount}`);
-              values.push(financiamiento.tasaFinanciamiento);
+              values.push(financiamiento.tasafinanciamiento);
               paramCount++;
           }
-          if (financiamiento.cantCuotas !== undefined) {
+          if (financiamiento.cantcuotas !== undefined) {
               updates.push(`cantCuotas = $${paramCount}`);
-              values.push(financiamiento.cantCuotas);
+              values.push(financiamiento.cantcuotas);
               paramCount++;
           }
-          if (financiamiento.estatusFinanciamiento !== undefined) {
+          if (financiamiento.estatusfinanciamiento !== undefined) {
               updates.push(`estatusFinanciamiento = $${paramCount}`);
-              values.push(financiamiento.estatusFinanciamiento);
+              values.push(financiamiento.estatusfinanciamiento);
               paramCount++;
           }
 

@@ -1,6 +1,6 @@
 export interface Marca {
-  idMarca?: number;
-  descMarca: string;
+  idmarca?: number;
+  descmarca: string;
 }
 
 import pool from '../config/db.config';
@@ -36,7 +36,7 @@ export const MarcaModel = {
       try {
           const { rows } = await pool.query(
               'INSERT INTO marcas (descMarca) VALUES ($1) RETURNING idMarca',
-              [marca.descMarca]
+              [marca.descmarca]
           );
           return rows[0].idmarca; // PostgreSQL devuelve en minúsculas
       } catch (error) {
@@ -50,7 +50,7 @@ export const MarcaModel = {
       try {
           const { rowCount } = await pool.query(
               'UPDATE marcas SET descMarca = $1 WHERE idMarca = $2',
-              [marca.descMarca, id]
+              [marca.descmarca, id]
           );
           return rowCount !== null && rowCount > 0;
       } catch (error) {

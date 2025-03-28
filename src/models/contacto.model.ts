@@ -1,9 +1,9 @@
 export interface Contacto {
-  idContacto?: number;
-  nombreContacto: string;
-  tlfContacto: string | null;
-  emailContacto: string | null;
-  estatusContacto: string;
+  idcontacto?: number;
+  nombrecontacto: string;
+  tlfcontacto: string | null;
+  emailcontacto: string | null;
+  estatuscontacto: string;
 }
 
 import pool from '../config/db.config';
@@ -55,10 +55,10 @@ export const ContactoModel = {
               VALUES ($1, $2, $3, $4)
               RETURNING idContacto
           `, [
-              contacto.nombreContacto,
-              contacto.tlfContacto,
-              contacto.emailContacto,
-              contacto.estatusContacto || 'ACTIVO'
+              contacto.nombrecontacto,
+              contacto.tlfcontacto,
+              contacto.emailcontacto,
+              contacto.estatuscontacto || 'ACTIVO'
           ]);
           
           return rows[0].idcontacto; // PostgreSQL devuelve en minúsculas
@@ -76,24 +76,24 @@ export const ContactoModel = {
           const values: any[] = [];
           let paramCount = 1;
 
-          if (contacto.nombreContacto !== undefined) {
+          if (contacto.nombrecontacto !== undefined) {
               updates.push(`nombreContacto = $${paramCount}`);
-              values.push(contacto.nombreContacto);
+              values.push(contacto.nombrecontacto);
               paramCount++;
           }
-          if (contacto.tlfContacto !== undefined) {
+          if (contacto.tlfcontacto !== undefined) {
               updates.push(`tlfContacto = $${paramCount}`);
-              values.push(contacto.tlfContacto);
+              values.push(contacto.tlfcontacto);
               paramCount++;
           }
-          if (contacto.emailContacto !== undefined) {
+          if (contacto.emailcontacto !== undefined) {
               updates.push(`emailContacto = $${paramCount}`);
-              values.push(contacto.emailContacto);
+              values.push(contacto.emailcontacto);
               paramCount++;
           }
-          if (contacto.estatusContacto !== undefined) {
+          if (contacto.estatuscontacto !== undefined) {
               updates.push(`estatusContacto = $${paramCount}`);
-              values.push(contacto.estatusContacto);
+              values.push(contacto.estatuscontacto);
               paramCount++;
           }
 

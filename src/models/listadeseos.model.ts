@@ -1,14 +1,14 @@
 export interface ListaDeseos {
-  idLista?: number;
-  fkCuentaUser: number;
-  fkProducto: number;
-  fechaRegsitro?: Date;
+  idlista?: number;
+  fkcuentaUser: number;
+  fkproducto: number;
+  fecharegsitro?: Date;
 }
 
 export interface ListaDeseosConProducto extends ListaDeseos {
-  nombreProducto?: string;
+  nombreproducto?: string;
   precio?: string;
-  nombreCategoria?: string;
+  nombrecategoria?: string;
 }
 
 import pool from '../config/db.config';
@@ -51,7 +51,7 @@ export const ListaDeseosModel = {
   addToWishlist: async (listaDeseos: ListaDeseos): Promise<number> => {
       try {
           // Verificar si ya existe
-          const existe = await ListaDeseosModel.existsInWishlist(listaDeseos.fkCuentaUser, listaDeseos.fkProducto);
+          const existe = await ListaDeseosModel.existsInWishlist(listaDeseos.fkcuentaUser, listaDeseos.fkproducto);
           if (existe) {
               throw new Error('El producto ya está en la lista de deseos');
           }
@@ -61,7 +61,7 @@ export const ListaDeseosModel = {
               (fkCuentaUser, fkProducto) 
               VALUES ($1, $2)
               RETURNING idLista
-          `, [listaDeseos.fkCuentaUser, listaDeseos.fkProducto]);
+          `, [listaDeseos.fkcuentaUser, listaDeseos.fkproducto]);
           
           return rows[0].idlista; // PostgreSQL devuelve en minúsculas
       } catch (error) {

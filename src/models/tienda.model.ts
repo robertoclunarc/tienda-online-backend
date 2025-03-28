@@ -1,15 +1,15 @@
 export interface Tienda {
-  idTienda?: number;
-  descTienda: string;
-  direccionTienda: string | null;
-  tlfTienda: string | null;
+  idtienda?: number;
+  desctienda: string;
+  direcciontienda: string | null;
+  tlftienda: string | null;
   encargado: string | null;
   email: string | null;
   estatus: string;
 }
 
 export interface TiendaProducto {
-  idTiendaProducto?: number;
+  idtiendaProducto?: number;
   fkTienda: number;
   fkProducto: number;
   canttProducto: number;
@@ -25,7 +25,7 @@ export const TiendaModel = {
           const { rows } = await pool.query(`
               SELECT * FROM tiendas 
               WHERE estatus = 'ACTIVO'
-              ORDER BY descTienda
+              ORDER BY desctienda
           `);
           return rows as Tienda[];
       } catch (error) {
@@ -37,7 +37,7 @@ export const TiendaModel = {
   // Obtener todas las tiendas
   findAll: async (): Promise<Tienda[]> => {
       try {
-          const { rows } = await pool.query('SELECT * FROM tiendas ORDER BY descTienda');
+          const { rows } = await pool.query('SELECT * FROM tiendas ORDER BY desctienda');
           return rows as Tienda[];
       } catch (error) {
           console.error('Error al obtener tiendas:', error);
@@ -49,7 +49,7 @@ export const TiendaModel = {
   findById: async (id: number): Promise<Tienda | null> => {
       try {
           const { rows } = await pool.query(
-              'SELECT * FROM tiendas WHERE idTienda = $1', 
+              'SELECT * FROM tiendas WHERE idtienda = $1', 
               [id]
           );
           return rows.length > 0 ? rows[0] : null;
@@ -64,13 +64,13 @@ export const TiendaModel = {
       try {
           const { rows } = await pool.query(`
               INSERT INTO tiendas 
-              (descTienda, direccionTienda, tlfTienda, encargado, email, estatus) 
+              (desctienda, direcciontienda, tlftienda, encargado, email, estatus) 
               VALUES ($1, $2, $3, $4, $5, $6)
-              RETURNING idTienda
+              RETURNING idtienda
           `, [
-              tienda.descTienda,
-              tienda.direccionTienda,
-              tienda.tlfTienda,
+              tienda.desctienda,
+              tienda.direcciontienda,
+              tienda.tlftienda,
               tienda.encargado,
               tienda.email,
               tienda.estatus || 'ACTIVO'
@@ -91,19 +91,19 @@ export const TiendaModel = {
           const values: any[] = [];
           let paramCount = 1;
 
-          if (tienda.descTienda !== undefined) {
-              updates.push(`descTienda = $${paramCount}`);
-              values.push(tienda.descTienda);
+          if (tienda.desctienda !== undefined) {
+              updates.push(`desctienda = $${paramCount}`);
+              values.push(tienda.desctienda);
               paramCount++;
           }
-          if (tienda.direccionTienda !== undefined) {
-              updates.push(`direccionTienda = $${paramCount}`);
-              values.push(tienda.direccionTienda);
+          if (tienda.direcciontienda !== undefined) {
+              updates.push(`direcciontienda = $${paramCount}`);
+              values.push(tienda.direcciontienda);
               paramCount++;
           }
-          if (tienda.tlfTienda !== undefined) {
-              updates.push(`tlfTienda = $${paramCount}`);
-              values.push(tienda.tlfTienda);
+          if (tienda.tlftienda !== undefined) {
+              updates.push(`tlftienda = $${paramCount}`);
+              values.push(tienda.tlftienda);
               paramCount++;
           }
           if (tienda.encargado !== undefined) {
@@ -126,7 +126,7 @@ export const TiendaModel = {
               return false;
           }
 
-          query += updates.join(', ') + ` WHERE idTienda = $${paramCount}`;
+          query += updates.join(', ') + ` WHERE idtienda = $${paramCount}`;
           values.push(id);
 
           const { rowCount } = await pool.query(query, values);
@@ -141,7 +141,7 @@ export const TiendaModel = {
   delete: async (id: number): Promise<boolean> => {
       try {
           const { rowCount } = await pool.query(
-              'UPDATE tiendas SET estatus = $1 WHERE idTienda = $2', 
+              'UPDATE tiendas SET estatus = $1 WHERE idtienda = $2', 
               ['INACTIVO', id]
           );
           return rowCount !== null && rowCount > 0;
@@ -182,7 +182,7 @@ export const TiendaModel = {
               await pool.query(`
                   UPDATE tiendasproductos 
                   SET canttProducto = $1, precioProducto = $2 
-                  WHERE idTiendaProducto = $3
+                  WHERE idtiendaProducto = $3
               `, [
                   tiendaProducto.canttProducto, 
                   tiendaProducto.precioProducto, 
@@ -197,7 +197,7 @@ export const TiendaModel = {
               INSERT INTO tiendasproductos 
               (fkTienda, fkProducto, canttProducto, precioProducto) 
               VALUES ($1, $2, $3, $4)
-              RETURNING idTiendaProducto
+              RETURNING idtiendaProducto
           `, [
               tiendaProducto.fkTienda,
               tiendaProducto.fkProducto,
@@ -218,7 +218,7 @@ export const TiendaModel = {
           const { rowCount } = await pool.query(`
               UPDATE tiendasproductos 
               SET canttProducto = $1, precioProducto = $2 
-              WHERE idTiendaProducto = $3
+              WHERE idtiendaProducto = $3
           `, [cantidad, precio, id]);
           
           return rowCount !== null && rowCount > 0;
@@ -232,7 +232,7 @@ export const TiendaModel = {
   removeProductoTienda: async (id: number): Promise<boolean> => {
       try {
           const { rowCount } = await pool.query(
-              'DELETE FROM tiendasproductos WHERE idTiendaProducto = $1', 
+              'DELETE FROM tiendasproductos WHERE idtiendaProducto = $1', 
               [id]
           );
           return rowCount !== null && rowCount > 0;

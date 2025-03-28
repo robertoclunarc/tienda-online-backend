@@ -1,14 +1,14 @@
 export interface Oferta {
-  idOferta?: number;
-  descOferta: string;
+  idoferta?: number;
+  descoferta: string;
   descuento: string;
-  inicioOferta?: Date;
-  finOferta?: Date;
-  estatusOferta: string;
+  iniciooferta?: Date;
+  finoferta?: Date;
+  estatusoferta: string;
 }
 
 export interface OfertaProducto {
-  idOfertaProducto?: number;
+  idofertaProducto?: number;
   fkOferta: number;
   fkProducto: number;
   descuento: string;
@@ -22,10 +22,10 @@ export const OfertaModel = {
       try {
           const { rows } = await pool.query(`
               SELECT * FROM ofertas 
-              WHERE estatusOferta = 'ACTIVO' 
-              AND (finOferta IS NULL OR finOferta >= CURRENT_TIMESTAMP)
-              AND (inicioOferta IS NULL OR inicioOferta <= CURRENT_TIMESTAMP)
-              ORDER BY finOferta ASC
+              WHERE estatusoferta = 'ACTIVO' 
+              AND (finoferta IS NULL OR finoferta >= CURRENT_TIMESTAMP)
+              AND (iniciooferta IS NULL OR iniciooferta <= CURRENT_TIMESTAMP)
+              ORDER BY finoferta ASC
           `);
           return rows as Oferta[];
       } catch (error) {
@@ -37,7 +37,7 @@ export const OfertaModel = {
   // Obtener todas las ofertas
   findAll: async (): Promise<Oferta[]> => {
       try {
-          const { rows } = await pool.query('SELECT * FROM ofertas ORDER BY finOferta ASC');
+          const { rows } = await pool.query('SELECT * FROM ofertas ORDER BY finoferta ASC');
           return rows as Oferta[];
       } catch (error) {
           console.error('Error al obtener ofertas:', error);
@@ -49,7 +49,7 @@ export const OfertaModel = {
   findById: async (id: number): Promise<Oferta | null> => {
       try {
           const { rows } = await pool.query(
-              'SELECT * FROM ofertas WHERE idOferta = $1', 
+              'SELECT * FROM ofertas WHERE idoferta = $1', 
               [id]
           );
           return rows.length > 0 ? rows[0] : null;
@@ -64,15 +64,15 @@ export const OfertaModel = {
       try {
           const { rows } = await pool.query(`
               INSERT INTO ofertas 
-              (descOferta, descuento, inicioOferta, finOferta, estatusOferta) 
+              (descoferta, descuento, iniciooferta, finoferta, estatusoferta) 
               VALUES ($1, $2, $3, $4, $5)
-              RETURNING idOferta
+              RETURNING idoferta
           `, [
-              oferta.descOferta, 
+              oferta.descoferta, 
               oferta.descuento, 
-              oferta.inicioOferta || new Date(), 
-              oferta.finOferta || null, 
-              oferta.estatusOferta || 'ACTIVO'
+              oferta.iniciooferta || new Date(), 
+              oferta.finoferta || null, 
+              oferta.estatusoferta || 'ACTIVO'
           ]);
           
           return rows[0].idoferta; // PostgreSQL devuelve en minúsculas
@@ -90,9 +90,9 @@ export const OfertaModel = {
           const values: any[] = [];
           let paramCount = 1;
 
-          if (oferta.descOferta !== undefined) {
-              updates.push(`descOferta = $${paramCount}`);
-              values.push(oferta.descOferta);
+          if (oferta.descoferta !== undefined) {
+              updates.push(`descoferta = $${paramCount}`);
+              values.push(oferta.descoferta);
               paramCount++;
           }
           if (oferta.descuento !== undefined) {
@@ -100,19 +100,19 @@ export const OfertaModel = {
               values.push(oferta.descuento);
               paramCount++;
           }
-          if (oferta.inicioOferta !== undefined) {
-              updates.push(`inicioOferta = $${paramCount}`);
-              values.push(oferta.inicioOferta);
+          if (oferta.iniciooferta !== undefined) {
+              updates.push(`iniciooferta = $${paramCount}`);
+              values.push(oferta.iniciooferta);
               paramCount++;
           }
-          if (oferta.finOferta !== undefined) {
-              updates.push(`finOferta = $${paramCount}`);
-              values.push(oferta.finOferta);
+          if (oferta.finoferta !== undefined) {
+              updates.push(`finoferta = $${paramCount}`);
+              values.push(oferta.finoferta);
               paramCount++;
           }
-          if (oferta.estatusOferta !== undefined) {
-              updates.push(`estatusOferta = $${paramCount}`);
-              values.push(oferta.estatusOferta);
+          if (oferta.estatusoferta !== undefined) {
+              updates.push(`estatusoferta = $${paramCount}`);
+              values.push(oferta.estatusoferta);
               paramCount++;
           }
 
@@ -120,7 +120,7 @@ export const OfertaModel = {
               return false;
           }
 
-          query += updates.join(', ') + ` WHERE idOferta = $${paramCount}`;
+          query += updates.join(', ') + ` WHERE idoferta = $${paramCount}`;
           values.push(id);
 
           const { rowCount } = await pool.query(query, values);
@@ -135,7 +135,7 @@ export const OfertaModel = {
   delete: async (id: number): Promise<boolean> => {
       try {
           const { rowCount } = await pool.query(
-              'UPDATE ofertas SET estatusOferta = $1 WHERE idOferta = $2', 
+              'UPDATE ofertas SET estatusoferta = $1 WHERE idoferta = $2', 
               ['INACTIVO', id]
           );
           return rowCount !== null && rowCount > 0;
@@ -168,7 +168,7 @@ export const OfertaModel = {
           const { rows } = await pool.query(`
               INSERT INTO ofertasproductos (fkOferta, fkProducto, descuento) 
               VALUES ($1, $2, $3)
-              RETURNING idOfertaProducto
+              RETURNING idofertaProducto
           `, [
               ofertaProducto.fkOferta,
               ofertaProducto.fkProducto,
@@ -186,7 +186,7 @@ export const OfertaModel = {
   removeProductoOferta: async (ofertaProductoId: number): Promise<boolean> => {
       try {
           const { rowCount } = await pool.query(
-              'DELETE FROM ofertasproductos WHERE idOfertaProducto = $1', 
+              'DELETE FROM ofertasproductos WHERE idofertaProducto = $1', 
               [ofertaProductoId]
           );
           return rowCount !== null && rowCount > 0;

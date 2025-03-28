@@ -1,6 +1,6 @@
 export interface Categoria {
-  idCategoria?: number;
-  descCategoria: string;
+  idcategoria?: number;
+  desccategoria: string;
 }
 
 import pool from '../config/db.config';
@@ -33,7 +33,7 @@ export const CategoriaModel = {
       try {
           const { rows } = await pool.query(
               'INSERT INTO categorias (descCategoria) VALUES ($1) RETURNING idCategoria',
-              [categoria.descCategoria]
+              [categoria.desccategoria]
           );
           return rows[0].idcategoria; // PostgreSQL devuelve en minúsculas
       } catch (error) {
@@ -47,7 +47,7 @@ export const CategoriaModel = {
       try {
           const { rowCount } = await pool.query(
               'UPDATE categorias SET descCategoria = $1 WHERE idCategoria = $2',
-              [categoria.descCategoria, id]
+              [categoria.desccategoria, id]
           );
           return rowCount !== null && rowCount > 0;
       } catch (error) {
