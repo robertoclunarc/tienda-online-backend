@@ -35,7 +35,7 @@ export const categoriaController = {
   getSubcategorias: async (req: Request, res: Response): Promise<void> => {
     try {
       const categoriaId = parseInt(req.params.id);
-      const subcategorias = await CategoriaModel.getSubcategorias(categoriaId);
+      const subcategorias = await CategoriaModel.getsubcategorias(categoriaId);
       res.json(subcategorias);
     } catch (error) {
       console.error('Error en getSubcategorias de categoriaController:', error);
