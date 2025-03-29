@@ -11,18 +11,18 @@ export interface Venta {
 }
 
 export interface DetalleVenta {
-  idDetalle?: number;
-  fkVenta: number;
-  fkProducto: number;
-  precioUnitario: string;
-  cantProducto: number;
-  subTotal: string;
+  iddetalle?: number;
+  fkventa: number;
+  fkproducto: number;
+  preciounitario: string;
+  cantproducto: number;
+  subtotal: string;
 }
 
 export interface VentaConDetalles extends Venta {
   detalles?: DetalleVenta[];
-  nombreUsuario?: string;
-  emailUsuario?: string;
+  nombreusuario?: string;
+  emailusuario?: string;
 }
 
 import pool from '../config/db.config';
@@ -32,9 +32,9 @@ export const VentaModel = {
   findAll: async (): Promise<VentaConDetalles[]> => {
       try {
           const { rows } = await pool.query(`
-              SELECT v.*, u.nombreUser as nombreUsuario, u.emailUser as emailUsuario
+              SELECT v.*, u.nombreuser as nombreusuario, u.emailuser as emailusuario
               FROM ventas v
-              JOIN cuentasusuarios u ON v.fkcuentauser = u.idCuentaUser
+              JOIN cuentasusuarios u ON v.fkcuentauser = u.idcuentauser
               ORDER BY v.fechaventa DESC
           `);
           return rows as VentaConDetalles[];
@@ -49,9 +49,9 @@ export const VentaModel = {
       try {
           // Obtener info de la venta
           const { rows: ventaRows } = await pool.query(`
-              SELECT v.*, u.nombreUser as nombreUsuario, u.emailUser as emailUsuario
+              SELECT v.*, u.nombreuser as nombreusuario, u.emailuser as emailusuario
               FROM ventas v
-              JOIN cuentasusuarios u ON v.fkcuentauser = u.idCuentaUser
+              JOIN cuentasusuarios u ON v.fkcuentauser = u.idcuentauser
               WHERE v.idventa = $1
           `, [id]);
           
@@ -63,8 +63,8 @@ export const VentaModel = {
           const { rows: detallesRows } = await pool.query(`
               SELECT d.*, p.nombreProducto
               FROM detallesventas d
-              JOIN productos p ON d.fkProducto = p.idProducto
-              WHERE d.fkVenta = $1
+              JOIN productos p ON d.fkproducto = p.idproducto
+              WHERE d.fkventa = $1
           `, [id]);
           
           const venta = ventaRows[0] as VentaConDetalles;
@@ -92,7 +92,7 @@ export const VentaModel = {
   },
 
   // Crear una nueva venta
-  create: async (venta: Venta, detalles: Omit<DetalleVenta, 'idDetalle' | 'fkVenta'>[]): Promise<number> => {
+  create: async (venta: Venta, detalles: Omit<DetalleVenta, 'iddetalle' | 'fkventa'>[]): Promise<number> => {
       const client = await pool.connect();
       
       try {
@@ -120,22 +120,22 @@ export const VentaModel = {
           for (const detalle of detalles) {
               await client.query(`
                   INSERT INTO detallesventas 
-                  (fkVenta, fkProducto, precioUnitario, cantProducto, subTotal) 
+                  (fkventa, fkproducto, preciounitario, cantproducto, subtotal) 
                   VALUES ($1, $2, $3, $4, $5)
               `, [
                   ventaId,
-                  detalle.fkProducto,
-                  detalle.precioUnitario,
-                  detalle.cantProducto,
-                  detalle.subTotal
+                  detalle.fkproducto,
+                  detalle.preciounitario,
+                  detalle.cantproducto,
+                  detalle.subtotal
               ]);
               
               // Actualizar inventario
               await client.query(`
                   UPDATE productos 
-                  SET cantInventario = cantInventario - $1 
-                  WHERE idProducto = $2
-              `, [detalle.cantProducto, detalle.fkProducto]);
+                  SET cantinventario = cantinventario - $1 
+                  WHERE idproducto = $2
+              `, [detalle.cantproducto, detalle.fkproducto]);
           }
           
           await client.query('COMMIT');
@@ -165,16 +165,16 @@ export const VentaModel = {
 
   // Obtener estadísticas de ventas
   getEstadisticas: async (): Promise<{
-      totalVentas: number;
-      montoTotal: string;
-      promedioVenta: string;
+      totalventas: number;
+      montototal: string;
+      promedioventa: string;
   }> => {
       try {
           const { rows } = await pool.query(`
               SELECT 
-                  COUNT(*) as totalVentas,
-                  SUM(montototalventa) as montoTotal,
-                  AVG(montototalventa) as promedioVenta
+                  COUNT(*) as totalventas,
+                  SUM(montototalventa) as montototal,
+                  AVG(montototalventa) as promedioventa
               FROM ventas
               WHERE estatusventa = 'ACTIVO'
           `);
@@ -186,9 +186,9 @@ export const VentaModel = {
           };
           
           return {
-              totalVentas: result.totalventas || 0,
-              montoTotal: result.montototal || '0.00',
-              promedioVenta: result.promedioventa || '0.00'
+              totalventas: result.totalventas || 0,
+              montototal: result.montototal || '0.00',
+              promedioventa: result.promedioventa || '0.00'
           };
       } catch (error) {
           console.error('Error al obtener estadísticas de ventas:', error);

@@ -14,8 +14,8 @@ export const FinanciamientoModel = {
       try {
           const { rows } = await pool.query(`
               SELECT * FROM financiamientos 
-              WHERE estatusFinanciamiento = 'ACTIVO'
-              ORDER BY cantCuotas
+              WHERE estatusfinanciamiento = 'ACTIVO'
+              ORDER BY cantcuotas
           `);
           return rows as Financiamiento[];
       } catch (error) {
@@ -27,7 +27,7 @@ export const FinanciamientoModel = {
   // Obtener todos los financiamientos
   findAll: async (): Promise<Financiamiento[]> => {
       try {
-          const { rows } = await pool.query('SELECT * FROM financiamientos ORDER BY cantCuotas');
+          const { rows } = await pool.query('SELECT * FROM financiamientos ORDER BY cantcuotas');
           return rows as Financiamiento[];
       } catch (error) {
           console.error('Error al obtener financiamientos:', error);
@@ -39,7 +39,7 @@ export const FinanciamientoModel = {
   findById: async (id: number): Promise<Financiamiento | null> => {
       try {
           const { rows } = await pool.query(
-              'SELECT * FROM financiamientos WHERE idFinanciamiento = $1', 
+              'SELECT * FROM financiamientos WHERE idfinanciamiento = $1', 
               [id]
           );
           return rows.length > 0 ? rows[0] : null;
@@ -54,9 +54,9 @@ export const FinanciamientoModel = {
       try {
           const { rows } = await pool.query(`
               INSERT INTO financiamientos 
-              (descFinanciamiento, tasaFinanciamiento, cantCuotas, estatusFinanciamiento) 
+              (descfinanciamiento, tasafinanciamiento, cantcuotas, estatusfinanciamiento) 
               VALUES ($1, $2, $3, $4)
-              RETURNING idFinanciamiento
+              RETURNING idfinanciamiento
           `, [
               financiamiento.descfinanciamiento,
               financiamiento.tasafinanciamiento,
@@ -80,22 +80,22 @@ export const FinanciamientoModel = {
           let paramCount = 1;
 
           if (financiamiento.descfinanciamiento !== undefined) {
-              updates.push(`descFinanciamiento = $${paramCount}`);
+              updates.push(`descfinanciamiento = $${paramCount}`);
               values.push(financiamiento.descfinanciamiento);
               paramCount++;
           }
           if (financiamiento.tasafinanciamiento !== undefined) {
-              updates.push(`tasaFinanciamiento = $${paramCount}`);
+              updates.push(`tasafinanciamiento = $${paramCount}`);
               values.push(financiamiento.tasafinanciamiento);
               paramCount++;
           }
           if (financiamiento.cantcuotas !== undefined) {
-              updates.push(`cantCuotas = $${paramCount}`);
+              updates.push(`cantcuotas = $${paramCount}`);
               values.push(financiamiento.cantcuotas);
               paramCount++;
           }
           if (financiamiento.estatusfinanciamiento !== undefined) {
-              updates.push(`estatusFinanciamiento = $${paramCount}`);
+              updates.push(`estatusfinanciamiento = $${paramCount}`);
               values.push(financiamiento.estatusfinanciamiento);
               paramCount++;
           }
@@ -104,7 +104,7 @@ export const FinanciamientoModel = {
               return false;
           }
 
-          query += updates.join(', ') + ` WHERE idFinanciamiento = $${paramCount}`;
+          query += updates.join(', ') + ` WHERE idfinanciamiento = $${paramCount}`;
           values.push(id);
 
           const { rowCount } = await pool.query(query, values);
@@ -119,7 +119,7 @@ export const FinanciamientoModel = {
   delete: async (id: number): Promise<boolean> => {
       try {
           const { rowCount } = await pool.query(
-              'UPDATE financiamientos SET estatusFinanciamiento = $1 WHERE idFinanciamiento = $2', 
+              'UPDATE financiamientos SET estatusfinanciamiento = $1 WHERE idfinanciamiento = $2', 
               ['INACTIVO', id]
           );
           return rowCount !== null && rowCount > 0;

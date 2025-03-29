@@ -35,15 +35,16 @@ export const usuarioController = {
   create: async (req: Request, res: Response): Promise<void> => {
     try {
       const nuevoUsuario: Usuario = req.body;
-      
+      console.log('Nuevo usuario:', nuevoUsuario);
+      console.log('body:', req.body);
       // Verificar si el email ya existe
-      const emailExists = await UsuarioModel.emailExists(nuevoUsuario.emailUser);
+      const emailExists = await UsuarioModel.emailExists(nuevoUsuario.emailuser);
       if (emailExists) {
         res.status(400).json({ message: 'El email ya está registrado' });
         return;
       }
       
-      const id = await UsuarioModel.create(nuevoUsuario);
+      const id = await UsuarioModel.register(nuevoUsuario);
       res.status(201).json({ id, message: 'Usuario creado correctamente' });
     } catch (error) {
       console.error('Error en create de usuarioController:', error);
@@ -58,12 +59,12 @@ export const usuarioController = {
       const usuarioData: Partial<Usuario> = req.body;
       
       // Si se está actualizando el email, verificar que no exista ya
-      if (usuarioData.emailUser) {
-        const emailExists = await UsuarioModel.emailExists(usuarioData.emailUser);
+      if (usuarioData.emailuser) {
+        const emailExists = await UsuarioModel.emailExists(usuarioData.emailuser);
         const usuario = await UsuarioModel.findById(id);
         
         // Si el email existe y no es el del usuario actual
-        if (emailExists && usuario && usuario.emailUser !== usuarioData.emailUser) {
+        if (emailExists && usuario && usuario.emailuser !== usuarioData.emailuser) {
           res.status(400).json({ message: 'El email ya está registrado por otro usuario' });
           return;
         }

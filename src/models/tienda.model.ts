@@ -9,11 +9,11 @@ export interface Tienda {
 }
 
 export interface TiendaProducto {
-  idtiendaProducto?: number;
-  fkTienda: number;
-  fkProducto: number;
-  canttProducto: number;
-  precioProducto: string;
+  idtiendaproducto?: number;
+  fktienda: number;
+  fkproducto: number;
+  cantproducto: number;
+  precioproducto: string;
 }
 
 import pool from '../config/db.config';
@@ -155,10 +155,10 @@ export const TiendaModel = {
   getProductosTienda: async (tiendaId: number): Promise<any[]> => {
       try {
           const { rows } = await pool.query(`
-              SELECT tp.*, p.nombreProducto, p.descProducto
+              SELECT tp.*, p.nombreproducto, p.descproducto
               FROM tiendasproductos tp
-              JOIN productos p ON tp.fkProducto = p.idProducto
-              WHERE tp.fkTienda = $1 AND p.estatus = 'ACTIVO'
+              JOIN productos p ON tp.fkproducto = p.idproducto
+              WHERE tp.fktienda = $1 AND p.estatus = 'ACTIVO'
           `, [tiendaId]);
           
           return rows as any[];
@@ -174,18 +174,18 @@ export const TiendaModel = {
           // Verificar si el producto ya está en la tienda
           const { rows: existingRows } = await pool.query(`
               SELECT * FROM tiendasproductos 
-              WHERE fkTienda = $1 AND fkProducto = $2
-          `, [tiendaProducto.fkTienda, tiendaProducto.fkProducto]);
+              WHERE fktienda = $1 AND fkproducto = $2
+          `, [tiendaProducto.fktienda, tiendaProducto.fkproducto]);
           
           if (existingRows.length > 0) {
               // Actualizar cantidad y precio
               await pool.query(`
                   UPDATE tiendasproductos 
-                  SET canttProducto = $1, precioProducto = $2 
-                  WHERE idtiendaProducto = $3
+                  SET canttProducto = $1, precioproducto = $2 
+                  WHERE idtiendaproducto = $3
               `, [
-                  tiendaProducto.canttProducto, 
-                  tiendaProducto.precioProducto, 
+                  tiendaProducto.cantproducto, 
+                  tiendaProducto.precioproducto, 
                   existingRows[0].idtiendaproducto
               ]);
               
@@ -195,14 +195,14 @@ export const TiendaModel = {
           // Insertar nuevo producto en tienda
           const { rows } = await pool.query(`
               INSERT INTO tiendasproductos 
-              (fkTienda, fkProducto, canttProducto, precioProducto) 
+              (fktienda, fkproducto, canttProducto, precioproducto) 
               VALUES ($1, $2, $3, $4)
-              RETURNING idtiendaProducto
+              RETURNING idtiendaproducto
           `, [
-              tiendaProducto.fkTienda,
-              tiendaProducto.fkProducto,
-              tiendaProducto.canttProducto,
-              tiendaProducto.precioProducto
+              tiendaProducto.fktienda,
+              tiendaProducto.fkproducto,
+              tiendaProducto.cantproducto,
+              tiendaProducto.precioproducto
           ]);
           
           return rows[0].idtiendaproducto;
@@ -217,8 +217,8 @@ export const TiendaModel = {
       try {
           const { rowCount } = await pool.query(`
               UPDATE tiendasproductos 
-              SET canttProducto = $1, precioProducto = $2 
-              WHERE idtiendaProducto = $3
+              SET canttProducto = $1, precioproducto = $2 
+              WHERE idtiendaproducto = $3
           `, [cantidad, precio, id]);
           
           return rowCount !== null && rowCount > 0;
@@ -232,7 +232,7 @@ export const TiendaModel = {
   removeProductoTienda: async (id: number): Promise<boolean> => {
       try {
           const { rowCount } = await pool.query(
-              'DELETE FROM tiendasproductos WHERE idtiendaProducto = $1', 
+              'DELETE FROM tiendasproductos WHERE idtiendaproducto = $1', 
               [id]
           );
           return rowCount !== null && rowCount > 0;

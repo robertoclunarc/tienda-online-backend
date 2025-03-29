@@ -9,7 +9,7 @@ export const authController = {
       const userData: Usuario = req.body;
       
       // Verificar si el correo ya está registrado
-      const userExists = await UsuarioModel.findByEmail(userData.emailUser);
+      const userExists = await UsuarioModel.findByEmail(userData.emailuser);
       if (userExists) {
         res.status(400).json({ message: 'El correo electrónico ya está registrado' });
         return;
@@ -20,12 +20,12 @@ export const authController = {
       
       // Crear usuario para la respuesta (sin contraseña)
       const user = {
-        idCuentaUser: userId,
-        nombreUser: userData.nombreUser,
-        emailUser: userData.emailUser,
-        tlfUser: userData.tlfUser,
+        idcuentauser: userId,
+        nombreuser: userData.nombreuser,
+        emailuser: userData.emailuser,
+        tlfuser: userData.tlfuser,
         estatus: userData.estatus || 'ACTIVO',
-        roleUser: userData.roleUser || 'user'
+        roleuser: userData.roleuser || 'user'
       };
       
       // Generar token
@@ -69,12 +69,12 @@ export const authController = {
       
       // Crear usuario para la respuesta (sin contraseña)
       const userResponse = {
-        idCuentaUser: user.idCuentaUser,
-        nombreUser: user.nombreUser,
-        emailUser: user.emailUser,
-        tlfUser: user.tlfUser,
+        idcuentauser: user.idcuentauser,
+        nombreuser: user.nombreuser,
+        emailuser: user.emailuser,
+        tlfuser: user.tlfuser,
         estatus: user.estatus,
-        roleUser: user.roleUser
+        roleuser: user.roleuser
       };
       
       // Generar token
@@ -147,12 +147,12 @@ export const authController = {
       
       // Respuesta con datos del usuario (sin contraseña)
       const userResponse = {
-        idCuentaUser: user.idCuentaUser,
-        nombreUser: user.nombreUser,
-        emailUser: user.emailUser,
-        tlfUser: user.tlfUser,
+        idcuentauser: user.idcuentauser,
+        nombreuser: user.nombreuser,
+        emailuser: user.emailuser,
+        tlfuser: user.tlfuser,
         estatus: user.estatus,
-        roleUser: user.roleUser
+        roleuser: user.roleuser
       };
       
       res.json({

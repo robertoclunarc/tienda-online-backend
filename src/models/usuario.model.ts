@@ -1,18 +1,17 @@
 export interface Usuario {
-    idcuentauser?: number;
-    nombreuser: string | null;
-    emailuser: string;
-    tlfuser: string | null;
-    passw: string;
-    estatus: string;
-    roleuser?: string; // Rol del usuario (admin, user, etc.)
-  }
+  idcuentauser?: number;
+  nombreuser: string | null;
+  emailuser: string;
+  tlfuser: string | null;
+  passw: string;
+  estatus: string;
+  roleuser?: string; // Rol del usuario (admin, user, etc.)
+}
   
   // Omitir contraseña para respuestas
   export type UsuarioSinPassword = Omit<Usuario, 'passw'>;
   
   import pool from '../config/db.config';
-  import bcrypt from 'bcryptjs';
   import { AuthService } from '../services/auth.service';
   
   export const UsuarioModel = {
@@ -51,7 +50,7 @@ export interface Usuario {
           'SELECT * FROM cuentasusuarios WHERE emailuser = $1', 
           [email]
         );
-        return rows.length > 0 ? rows[0] : null;
+        return rows.length > 0 ? rows[0] as Usuario : null;
       } catch (error) {
         console.error(`Error al buscar usuario por email ${email}:`, error);
         throw error;

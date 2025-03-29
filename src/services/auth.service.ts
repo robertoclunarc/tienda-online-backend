@@ -27,9 +27,9 @@ export const AuthService = {
    */
   generateToken: (user: Partial<Usuario>): string => {
     const payload = {
-      userId: user.idCuentaUser,
-      email: user.emailUser,
-      role: user.roleUser || 'user'
+      userId: user.idcuentauser,
+      email: user.emailuser,
+      role: user.roleuser || 'user'
     };
 
     const options: SignOptions = { expiresIn: JWT_EXPIRES_IN };

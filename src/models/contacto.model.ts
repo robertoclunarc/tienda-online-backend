@@ -14,8 +14,8 @@ export const ContactoModel = {
       try {
           const { rows } = await pool.query(`
               SELECT * FROM contactos 
-              WHERE estatusContacto = 'ACTIVO'
-              ORDER BY nombreContacto
+              WHERE estatuscontacto = 'ACTIVO'
+              ORDER BY nombrecontacto
           `);
           return rows as Contacto[];
       } catch (error) {
@@ -27,7 +27,7 @@ export const ContactoModel = {
   // Obtener todos los contactos
   findAll: async (): Promise<Contacto[]> => {
       try {
-          const { rows } = await pool.query('SELECT * FROM contactos ORDER BY nombreContacto');
+          const { rows } = await pool.query('SELECT * FROM contactos ORDER BY nombrecontacto');
           return rows as Contacto[];
       } catch (error) {
           console.error('Error al obtener contactos:', error);
@@ -38,7 +38,7 @@ export const ContactoModel = {
   // Obtener un contacto por ID
   findById: async (id: number): Promise<Contacto | null> => {
       try {
-          const { rows } = await pool.query('SELECT * FROM contactos WHERE idContacto = $1', [id]);
+          const { rows } = await pool.query('SELECT * FROM contactos WHERE idcontacto = $1', [id]);
           return rows.length > 0 ? rows[0] : null;
       } catch (error) {
           console.error(`Error al obtener contacto con ID ${id}:`, error);
@@ -51,9 +51,9 @@ export const ContactoModel = {
       try {
           const { rows } = await pool.query(`
               INSERT INTO contactos 
-              (nombreContacto, tlfContacto, emailContacto, estatusContacto) 
+              (nombrecontacto, tlfcontacto, emailcontacto, estatuscontacto) 
               VALUES ($1, $2, $3, $4)
-              RETURNING idContacto
+              RETURNING idcontacto
           `, [
               contacto.nombrecontacto,
               contacto.tlfcontacto,
@@ -77,22 +77,22 @@ export const ContactoModel = {
           let paramCount = 1;
 
           if (contacto.nombrecontacto !== undefined) {
-              updates.push(`nombreContacto = $${paramCount}`);
+              updates.push(`nombrecontacto = $${paramCount}`);
               values.push(contacto.nombrecontacto);
               paramCount++;
           }
           if (contacto.tlfcontacto !== undefined) {
-              updates.push(`tlfContacto = $${paramCount}`);
+              updates.push(`tlfcontacto = $${paramCount}`);
               values.push(contacto.tlfcontacto);
               paramCount++;
           }
           if (contacto.emailcontacto !== undefined) {
-              updates.push(`emailContacto = $${paramCount}`);
+              updates.push(`emailcontacto = $${paramCount}`);
               values.push(contacto.emailcontacto);
               paramCount++;
           }
           if (contacto.estatuscontacto !== undefined) {
-              updates.push(`estatusContacto = $${paramCount}`);
+              updates.push(`estatuscontacto = $${paramCount}`);
               values.push(contacto.estatuscontacto);
               paramCount++;
           }
@@ -101,7 +101,7 @@ export const ContactoModel = {
               return false;
           }
 
-          query += updates.join(', ') + ` WHERE idContacto = $${paramCount}`;
+          query += updates.join(', ') + ` WHERE idcontacto = $${paramCount}`;
           values.push(id);
 
           const { rowCount } = await pool.query(query, values);
@@ -116,7 +116,7 @@ export const ContactoModel = {
   delete: async (id: number): Promise<boolean> => {
       try {
           const { rowCount } = await pool.query(
-              'UPDATE contactos SET estatusContacto = $1 WHERE idContacto = $2', 
+              'UPDATE contactos SET estatuscontacto = $1 WHERE idcontacto = $2', 
               ['INACTIVO', id]
           );
           return rowCount !== null && rowCount > 0;

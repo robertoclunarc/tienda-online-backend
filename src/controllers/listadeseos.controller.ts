@@ -21,7 +21,7 @@ export const listaDeseosController = {
       const listaDeseos: ListaDeseos = req.body;
       
       // Verificar si ya existe
-      const existe = await ListaDeseosModel.existsInWishlist(listaDeseos.fkCuentaUser, listaDeseos.fkProducto);
+      const existe = await ListaDeseosModel.existsInWishlist(listaDeseos.fkcuentauser, listaDeseos.fkproducto);
       if (existe) {
         res.status(400).json({ message: 'El producto ya está en la lista de deseos' });
         return;

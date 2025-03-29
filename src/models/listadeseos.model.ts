@@ -1,6 +1,6 @@
 export interface ListaDeseos {
   idlista?: number;
-  fkcuentaUser: number;
+  fkcuentauser: number;
   fkproducto: number;
   fecharegsitro?: Date;
 }
@@ -18,12 +18,12 @@ export const ListaDeseosModel = {
   findByUsuario: async (usuarioId: number): Promise<ListaDeseosConProducto[]> => {
       try {
           const { rows } = await pool.query(`
-              SELECT l.*, p.nombreProducto, p.precio, cat.descCategoria as nombreCategoria
+              SELECT l.*, p.nombreproducto, p.precio, cat.desccategoria as nombrecategoria
               FROM listasdedeseos l
-              JOIN productos p ON l.fkProducto = p.idProducto
-              LEFT JOIN subcategorias s ON p.fkSubCategoria = s.idSubCategoria
-              LEFT JOIN categorias cat ON s.fkCategoria = cat.idCategoria
-              WHERE l.fkCuentaUser = $1 AND p.estatus = 'ACTIVO'
+              JOIN productos p ON l.fkproducto = p.idproducto
+              LEFT JOIN subcategorias s ON p.fksubcategoria = s.idsubcategoria
+              LEFT JOIN categorias cat ON s.fkcategoria = cat.idcategoria
+              WHERE l.fkcuentauser = $1 AND p.estatus = 'ACTIVO'
           `, [usuarioId]);
           return rows as ListaDeseosConProducto[];
       } catch (error) {
@@ -37,7 +37,7 @@ export const ListaDeseosModel = {
       try {
           const { rows } = await pool.query(`
               SELECT COUNT(*) as count FROM listasdedeseos 
-              WHERE fkCuentaUser = $1 AND fkProducto = $2
+              WHERE fkcuentauser = $1 AND fkproducto = $2
           `, [usuarioId, productoId]);
           
           return rows[0].count > 0;
@@ -51,17 +51,17 @@ export const ListaDeseosModel = {
   addToWishlist: async (listaDeseos: ListaDeseos): Promise<number> => {
       try {
           // Verificar si ya existe
-          const existe = await ListaDeseosModel.existsInWishlist(listaDeseos.fkcuentaUser, listaDeseos.fkproducto);
+          const existe = await ListaDeseosModel.existsInWishlist(listaDeseos.fkcuentauser, listaDeseos.fkproducto);
           if (existe) {
               throw new Error('El producto ya está en la lista de deseos');
           }
           
           const { rows } = await pool.query(`
               INSERT INTO listasdedeseos 
-              (fkCuentaUser, fkProducto) 
+              (fkcuentauser, fkproducto) 
               VALUES ($1, $2)
-              RETURNING idLista
-          `, [listaDeseos.fkcuentaUser, listaDeseos.fkproducto]);
+              RETURNING idlista
+          `, [listaDeseos.fkcuentauser, listaDeseos.fkproducto]);
           
           return rows[0].idlista; // PostgreSQL devuelve en minúsculas
       } catch (error) {
@@ -74,7 +74,7 @@ export const ListaDeseosModel = {
   removeFromWishlist: async (id: number): Promise<boolean> => {
       try {
           const { rowCount } = await pool.query(
-              'DELETE FROM listasdedeseos WHERE idLista = $1', 
+              'DELETE FROM listasdedeseos WHERE idlista = $1', 
               [id]
           );
           return rowCount !== null && rowCount > 0;
@@ -88,7 +88,7 @@ export const ListaDeseosModel = {
   removeProductFromWishlist: async (usuarioId: number, productoId: number): Promise<boolean> => {
       try {
           const { rowCount } = await pool.query(
-              'DELETE FROM listasdedeseos WHERE fkCuentaUser = $1 AND fkProducto = $2', 
+              'DELETE FROM listasdedeseos WHERE fkcuentauser = $1 AND fkproducto = $2', 
               [usuarioId, productoId]
           );
           return rowCount !== null && rowCount > 0;
@@ -102,7 +102,7 @@ export const ListaDeseosModel = {
   clearWishlist: async (usuarioId: number): Promise<boolean> => {
       try {
           const { rowCount } = await pool.query(
-              'DELETE FROM listasdedeseos WHERE fkCuentaUser = $1', 
+              'DELETE FROM listasdedeseos WHERE fkcuentauser = $1', 
               [usuarioId]
           );
           return rowCount !== null && rowCount > 0;

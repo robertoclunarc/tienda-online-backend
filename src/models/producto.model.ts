@@ -11,10 +11,10 @@ export interface Producto {
   }
   
   export interface ProductoConDetalles extends Producto {
-    nombreMarca?: string;
-    nombreModelo?: string;
-    nombreCategoria?: string;
-    nombreSubCategoria?: string;
+    nombremarca?: string;
+    nombremodelo?: string;
+    nombrecategoria?: string;
+    nombresubcategoria?: string;
   }
   
   import pool from '../config/db.config';
@@ -24,13 +24,13 @@ export interface Producto {
     findAll: async (): Promise<ProductoConDetalles[]> => {
       try {
         const result = await pool.query(`
-          SELECT p.*, m.descMarca as nombreMarca, mo.descModelo as nombreModelo, 
-                 c.descCategoria as nombreCategoria, s.descSubCategoria as nombreSubCategoria
+          SELECT p.*, m.descmarca as nombremarca, mo.descmodelo as nombremodelo, 
+                 c.desccategoria as nombrecategoria, s.descsubcategoria as nombresubcategoria
           FROM productos p
-          LEFT JOIN modelos mo ON p.fkmodelo = mo.idModelo
-          LEFT JOIN marcas m ON mo.fkMarca = m.idMarca
-          LEFT JOIN subcategorias s ON p.fksubcategoria = s.idSubCategoria
-          LEFT JOIN categorias c ON s.fkCategoria = c.idCategoria
+          LEFT JOIN modelos mo ON p.fkmodelo = mo.idmodelo
+          LEFT JOIN marcas m ON mo.fkmarca = m.idmarca
+          LEFT JOIN subcategorias s ON p.fksubcategoria = s.idsubcategoria
+          LEFT JOIN categorias c ON s.fkCategoria = c.idcategoria
           WHERE p.estatus = 'ACTIVO'
           ORDER BY p.idproducto DESC
         `);
@@ -45,13 +45,13 @@ export interface Producto {
     findFeatured: async (limit: number = 8): Promise<ProductoConDetalles[]> => {
       try {
         const result = await pool.query(`
-          SELECT p.*, m.descMarca as nombreMarca, mo.descModelo as nombreModelo, 
-                 c.descCategoria as nombreCategoria, s.descSubCategoria as nombreSubCategoria
+          SELECT p.*, m.descmarca as nombremarca, mo.descmodelo as nombremodelo, 
+                 c.desccategoria as nombrecategoria, s.descsubcategoria as nombresubcategoria
           FROM productos p
-          LEFT JOIN modelos mo ON p.fkmodelo = mo.idModelo
-          LEFT JOIN marcas m ON mo.fkMarca = m.idMarca
-          LEFT JOIN subcategorias s ON p.fksubcategoria = s.idSubCategoria
-          LEFT JOIN categorias c ON s.fkCategoria = c.idCategoria
+          LEFT JOIN modelos mo ON p.fkmodelo = mo.idmodelo
+          LEFT JOIN marcas m ON mo.fkmarca = m.idmarca
+          LEFT JOIN subcategorias s ON p.fksubcategoria = s.idsubcategoria
+          LEFT JOIN categorias c ON s.fkCategoria = c.idcategoria
           WHERE p.estatus = 'ACTIVO'
           ORDER BY p.idproducto DESC
           LIMIT $1
@@ -67,13 +67,13 @@ export interface Producto {
     findById: async (id: number): Promise<ProductoConDetalles | null> => {
       try {
         const result = await pool.query(`
-          SELECT p.*, m.descMarca as nombreMarca, mo.descModelo as nombreModelo, 
-                 c.descCategoria as nombreCategoria, s.descSubCategoria as nombreSubCategoria
+          SELECT p.*, m.descmarca as nombremarca, mo.descmodelo as nombremodelo, 
+                 c.desccategoria as nombrecategoria, s.descsubcategoria as nombresubcategoria
           FROM productos p
-          LEFT JOIN modelos mo ON p.fkmodelo = mo.idModelo
-          LEFT JOIN marcas m ON mo.fkMarca = m.idMarca
-          LEFT JOIN subcategorias s ON p.fksubcategoria = s.idSubCategoria
-          LEFT JOIN categorias c ON s.fkCategoria = c.idCategoria
+          LEFT JOIN modelos mo ON p.fkmodelo = mo.idmodelo
+          LEFT JOIN marcas m ON mo.fkmarca = m.idmarca
+          LEFT JOIN subcategorias s ON p.fksubcategoria = s.idsubcategoria
+          LEFT JOIN categorias c ON s.fkCategoria = c.idcategoria
           WHERE p.idproducto = $1 AND p.estatus = 'ACTIVO'
         `, [id]);
         
@@ -89,14 +89,14 @@ export interface Producto {
     findByCategory: async (categoryId: number): Promise<ProductoConDetalles[]> => {
       try {
         const result = await pool.query(`
-          SELECT p.*, m.descMarca as nombreMarca, mo.descModelo as nombreModelo, 
-                 c.descCategoria as nombreCategoria, s.descSubCategoria as nombreSubCategoria
+          SELECT p.*, m.descmarca as nombremarca, mo.descmodelo as nombremodelo, 
+                 c.desccategoria as nombrecategoria, s.descsubcategoria as nombresubcategoria
           FROM productos p
-          LEFT JOIN modelos mo ON p.fkmodelo = mo.idModelo
-          LEFT JOIN marcas m ON mo.fkMarca = m.idMarca
-          LEFT JOIN subcategorias s ON p.fksubcategoria = s.idSubCategoria
-          LEFT JOIN categorias c ON s.fkCategoria = c.idCategoria
-          WHERE c.idCategoria = $1 AND p.estatus = 'ACTIVO'
+          LEFT JOIN modelos mo ON p.fkmodelo = mo.idmodelo
+          LEFT JOIN marcas m ON mo.fkmarca = m.idmarca
+          LEFT JOIN subcategorias s ON p.fksubcategoria = s.idsubcategoria
+          LEFT JOIN categorias c ON s.fkCategoria = c.idcategoria
+          WHERE c.idcategoria = $1 AND p.estatus = 'ACTIVO'
         `, [categoryId]);
         return result.rows as ProductoConDetalles[];
       } catch (error) {
@@ -109,13 +109,13 @@ export interface Producto {
     findBySubcategory: async (subcategoryId: number): Promise<ProductoConDetalles[]> => {
       try {
         const result = await pool.query(`
-          SELECT p.*, m.descMarca as nombreMarca, mo.descModelo as nombreModelo, 
-                 c.descCategoria as nombreCategoria, s.descSubCategoria as nombreSubCategoria
+          SELECT p.*, m.descmarca as nombremarca, mo.descmodelo as nombremodelo, 
+                 c.desccategoria as nombrecategoria, s.descsubcategoria as nombresubcategoria
           FROM productos p
-          LEFT JOIN modelos mo ON p.fkmodelo = mo.idModelo
-          LEFT JOIN marcas m ON mo.fkMarca = m.idMarca
-          LEFT JOIN subcategorias s ON p.fksubcategoria = s.idSubCategoria
-          LEFT JOIN categorias c ON s.fkCategoria = c.idCategoria
+          LEFT JOIN modelos mo ON p.fkmodelo = mo.idmodelo
+          LEFT JOIN marcas m ON mo.fkmarca = m.idmarca
+          LEFT JOIN subcategorias s ON p.fksubcategoria = s.idsubcategoria
+          LEFT JOIN categorias c ON s.fkCategoria = c.idcategoria
           WHERE p.fksubcategoria = $1 AND p.estatus = 'ACTIVO'
         `, [subcategoryId]);
         return result.rows as ProductoConDetalles[];
@@ -225,17 +225,17 @@ export interface Producto {
     // Buscar productos
     search: async (term: string): Promise<ProductoConDetalles[]> => {
       try {
-        const searchTerm = `%${term}%`;
+        const searchTerm = `%${term.trim().toLowerCase()}%`;
         const rows = await pool.query(`
-          SELECT p.*, m.descMarca as nombreMarca, mo.descModelo as nombreModelo, 
-                 c.descCategoria as nombreCategoria, s.descSubCategoria as nombreSubCategoria
+          SELECT p.*, m.descmarca as nombremarca, mo.descmodelo as nombremodelo, 
+                 c.desccategoria as nombrecategoria, s.descsubcategoria as nombresubcategoria
           FROM productos p
-          LEFT JOIN modelos mo ON p.fkmodelo = mo.idModelo
-          LEFT JOIN marcas m ON mo.fkMarca = m.idMarca
-          LEFT JOIN subcategorias s ON p.fksubcategoria = s.idSubCategoria
-          LEFT JOIN categorias c ON s.fkCategoria = c.idCategoria
-          WHERE (p.nombreproducto LIKE $1 OR p.descproducto LIKE $2 OR m.descMarca LIKE $3 OR 
-                 mo.descModelo LIKE $4 OR c.descCategoria LIKE $5 OR s.descSubCategoria LIKE $6)
+          LEFT JOIN modelos mo ON p.fkmodelo = mo.idmodelo
+          LEFT JOIN marcas m ON mo.fkmarca = m.idmarca
+          LEFT JOIN subcategorias s ON p.fksubcategoria = s.idsubcategoria
+          LEFT JOIN categorias c ON s.fkcategoria = c.idcategoria
+          WHERE (LOWER(p.nombreproducto) LIKE $1 OR LOWER(p.descproducto) LIKE $2 OR LOWER(m.descmarca) LIKE $3 OR 
+                 LOWER(mo.descmodelo) LIKE $4 OR LOWER(c.desccategoria) LIKE $5 OR LOWER(s.descsubcategoria) LIKE $6)
           AND p.estatus = 'ACTIVO'
         `, [searchTerm, searchTerm, searchTerm, searchTerm, searchTerm, searchTerm]);
         

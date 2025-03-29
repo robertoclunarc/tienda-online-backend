@@ -11,9 +11,9 @@ export const ModeloModel = {
   findAll: async (): Promise<Modelo[]> => {
       try {
           const { rows } = await pool.query(`
-              SELECT m.*, ma.descMarca as nombreMarca
+              SELECT m.*, ma.descmarca as nombremarca
               FROM modelos m
-              JOIN marcas ma ON m.fkmarca = ma.idMarca
+              JOIN marcas ma ON m.fkmarca = ma.idmarca
               ORDER BY m.descmodelo
           `);
           return rows as Modelo[];
@@ -27,9 +27,9 @@ export const ModeloModel = {
   findByMarca: async (marcaId: number): Promise<Modelo[]> => {
       try {
           const { rows } = await pool.query(`
-              SELECT m.*, ma.descMarca as nombreMarca
+              SELECT m.*, ma.descmarca as nombremarca
               FROM modelos m
-              JOIN marcas ma ON m.fkmarca = ma.idMarca
+              JOIN marcas ma ON m.fkmarca = ma.idmarca
               WHERE m.fkmarca = $1
               ORDER BY m.descmodelo
           `, [marcaId]);
@@ -44,9 +44,9 @@ export const ModeloModel = {
   findById: async (id: number): Promise<Modelo | null> => {
       try {
           const { rows } = await pool.query(`
-              SELECT m.*, ma.descMarca as nombreMarca
+              SELECT m.*, ma.descmarca as nombremarca
               FROM modelos m
-              JOIN marcas ma ON m.fkmarca = ma.idMarca
+              JOIN marcas ma ON m.fkmarca = ma.idmarca
               WHERE m.idmodelo = $1
           `, [id]);
           

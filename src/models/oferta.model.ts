@@ -8,9 +8,9 @@ export interface Oferta {
 }
 
 export interface OfertaProducto {
-  idofertaProducto?: number;
-  fkOferta: number;
-  fkProducto: number;
+  idofertaproducto?: number;
+  fkoferta: number;
+  fkproducto: number;
   descuento: string;
 }
 
@@ -151,8 +151,8 @@ export const OfertaModel = {
           const { rows } = await pool.query(`
               SELECT op.*, p.nombreProducto, p.precio, p.fkSubCategoria
               FROM ofertasproductos op
-              JOIN productos p ON op.fkProducto = p.idProducto
-              WHERE op.fkOferta = $1 AND p.estatus = 'ACTIVO'
+              JOIN productos p ON op.fkproducto = p.idProducto
+              WHERE op.fkoferta = $1 AND p.estatus = 'ACTIVO'
           `, [ofertaId]);
           
           return rows as any[];
@@ -166,12 +166,12 @@ export const OfertaModel = {
   addProductoOferta: async (ofertaProducto: OfertaProducto): Promise<number> => {
       try {
           const { rows } = await pool.query(`
-              INSERT INTO ofertasproductos (fkOferta, fkProducto, descuento) 
+              INSERT INTO ofertasproductos (fkoferta, fkproducto, descuento) 
               VALUES ($1, $2, $3)
-              RETURNING idofertaProducto
+              RETURNING idofertaproducto
           `, [
-              ofertaProducto.fkOferta,
-              ofertaProducto.fkProducto,
+              ofertaProducto.fkoferta,
+              ofertaProducto.fkproducto,
               ofertaProducto.descuento
           ]);
           
@@ -186,7 +186,7 @@ export const OfertaModel = {
   removeProductoOferta: async (ofertaProductoId: number): Promise<boolean> => {
       try {
           const { rowCount } = await pool.query(
-              'DELETE FROM ofertasproductos WHERE idofertaProducto = $1', 
+              'DELETE FROM ofertasproductos WHERE idofertaproducto = $1', 
               [ofertaProductoId]
           );
           return rowCount !== null && rowCount > 0;

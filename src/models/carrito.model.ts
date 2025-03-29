@@ -20,12 +20,12 @@ export interface Carrito {
     findByUsuario: async (usuarioId: number): Promise<CarritoConProducto[]> => {
       try {
         const rows = await pool.query(`
-          SELECT c.*, p.nombreProducto, p.precio, cat.descCategoria as nombreCategoria
+          SELECT c.*, p.nombreproducto, p.precio, cat.desccategoria as nombrecategoria
           FROM carritos c
-          JOIN productos p ON c.fkProducto = p.idProducto
-          LEFT JOIN subcategorias s ON p.fkSubCategoria = s.idSubCategoria
+          JOIN productos p ON c.fkproducto = p.idproducto
+          LEFT JOIN subcategorias s ON p.fksubcategoria = s.idsubcategoria
           LEFT JOIN categorias cat ON s.fkCategoria = cat.idCategoria
-          WHERE c.fkCuentaUser = $1 AND c.estatusCarrito = 'ACTIVO'
+          WHERE c.fkcuentauser = $1 AND c.estatuscarrito = 'ACTIVO'
         `, [usuarioId]);
         return rows.rows as CarritoConProducto[];
       } catch (error) {
@@ -38,12 +38,12 @@ export interface Carrito {
     findById: async (id: number): Promise<CarritoConProducto | null> => {
       try {
         const rows = await pool.query(`
-          SELECT c.*, p.nombreProducto, p.precio, cat.descCategoria as nombreCategoria
+          SELECT c.*, p.nombreproducto, p.precio, cat.desccategoria as nombrecategoria
           FROM carritos c
-          JOIN productos p ON c.fkProducto = p.idProducto
-          LEFT JOIN subcategorias s ON p.fkSubCategoria = s.idSubCategoria
+          JOIN productos p ON c.fkproducto = p.idproducto
+          LEFT JOIN subcategorias s ON p.fksubcategoria = s.idsubcategoria
           LEFT JOIN categorias cat ON s.fkCategoria = cat.idCategoria
-          WHERE c.idCarrito = $1
+          WHERE c.idcarrito = $1
         `, [id]);
         
         const carritos = rows.rows as CarritoConProducto[];
@@ -59,7 +59,7 @@ export interface Carrito {
       try {
         const rows = await pool.query(`
           SELECT * FROM carritos 
-          WHERE fkCuentaUser = $1 AND fkProducto = $2 AND estatusCarrito = 'ACTIVO'
+          WHERE fkcuentauser = $1 AND fkproducto = $2 AND estatuscarrito = 'ACTIVO'
         `, [usuarioId, productoId]);
         
         const carritos = rows.rows as Carrito[];
@@ -74,7 +74,7 @@ export interface Carrito {
     addToCart: async (carrito: Carrito): Promise<number> => {
       try {
         // Obtener el precio actual del producto
-        const productRows = await pool.query('SELECT precio FROM productos WHERE idProducto = $1', [carrito.fkproducto]);
+        const productRows = await pool.query('SELECT precio FROM productos WHERE idproducto = $1', [carrito.fkproducto]);
         const productos = productRows.rows as { precio: string }[];
         
         if (productos.length === 0) {
@@ -82,7 +82,7 @@ export interface Carrito {
         }
         
         const precioProducto = parseFloat(productos[0].precio);
-        const montoTotal = (precioProducto * carrito.cantproducto).toFixed(2);
+        const montototal = (precioProducto * carrito.cantproducto).toFixed(2);
         
         // Verificar si el producto ya está en el carrito
         const itemExistente = await CarritoModel.findByUsuarioProducto(carrito.fkcuentauser, carrito.fkproducto);
@@ -94,8 +94,8 @@ export interface Carrito {
           
           await pool.query(`
             UPDATE carritos 
-            SET cantProducto = $1, montoTotal = $2 
-            WHERE idCarrito = $3
+            SET cantproducto = $1, montototal = $2 
+            WHERE idcarrito = $3
           `, [nuevaCantidad, nuevoMonto, itemExistente.idcarrito]);
           
           return itemExistente?.idcarrito ?? 0;
@@ -103,18 +103,18 @@ export interface Carrito {
           // Insertar nuevo item en carrito
           const result = await pool.query(`
             INSERT INTO carritos 
-            (fkProducto, cantProducto, montoTotal, fkCuentaUser, estatusCarrito) 
-            VALUES ($1, $2, $3, $4, $5)
+            (fkproducto, cantproducto, montototal, fkcuentauser, estatuscarrito) 
+            VALUES ($1, $2, $3, $4, $5) RETURNING idcarrito
           `, [
             carrito.fkproducto,
             carrito.cantproducto,
-            montoTotal,
+            montototal,
             carrito.fkcuentauser,
             carrito.estatuscarrito || 'ACTIVO'
           ]);
           
           const result2 = result.rows[0];
-          return result2.idCarrito;
+          return result2.idcarrito;
         }
       } catch (error) {
         console.error('Error al añadir producto al carrito:', error);
@@ -132,7 +132,7 @@ export interface Carrito {
         }
         
         // Obtener el precio actual del producto
-        const productRows = await pool.query('SELECT precio FROM productos WHERE idProducto = 1$', [carritoItem.fkproducto]);
+        const productRows = await pool.query('SELECT precio FROM productos WHERE idproducto = 1$', [carritoItem.fkproducto]);
         const productos = productRows.rows;
         
         if (productos.length === 0) {
@@ -140,14 +140,14 @@ export interface Carrito {
         }
         
         const precioProducto = parseFloat(productos[0].precio);
-        const montoTotal = (precioProducto * cantidad).toFixed(2);
+        const montototal = (precioProducto * cantidad).toFixed(2);
         
         // Actualizar cantidad y monto
         const result = await pool.query(`
           UPDATE carritos 
-          SET cantProducto = $1, montoTotal = $2 
-          WHERE idCarrito = $3
-        `, [cantidad, montoTotal, id]);
+          SET cantproducto = $1, montototal = $2 
+          WHERE idcarrito = $3
+        `, [cantidad, montototal, id]);
         
         const  affectedRows  = result.rowCount || 0;
         return affectedRows > 0;
@@ -160,7 +160,7 @@ export interface Carrito {
     // Eliminar un item del carrito
     removeFromCart: async (id: number): Promise<boolean> => {
       try {
-        const result = await pool.query('DELETE FROM carritos WHERE idCarrito = $1', [id]);
+        const result = await pool.query('DELETE FROM carritos WHERE idcarrito = $1', [id]);
         const affectedRows = result.rowCount || 0;
         return affectedRows > 0;
       } catch (error) {
@@ -172,7 +172,7 @@ export interface Carrito {
     // Limpiar el carrito de un usuario
     clearCart: async (usuarioId: number): Promise<boolean> => {
       try {
-        const result = await pool.query('DELETE FROM carritos WHERE fkCuentaUser = $1', [usuarioId]);
+        const result = await pool.query('DELETE FROM carritos WHERE fkcuentauser = $1', [usuarioId]);
         const affectedRows = result.rowCount || 0;
         return affectedRows > 0;
       } catch (error) {
@@ -185,9 +185,9 @@ export interface Carrito {
     getTotalCarrito: async (usuarioId: number): Promise<{ total: string, cantidadItems: number }> => {
       try {
         const rows = await pool.query(`
-          SELECT SUM(montoTotal) as total, COUNT(*) as cantidadItems 
+          SELECT SUM(montototal) as total, COUNT(*) as cantidadItems 
           FROM carritos 
-          WHERE fkCuentaUser = $1 AND estatusCarrito = 'ACTIVO'
+          WHERE fkcuentauser = $1 AND estatuscarrito = 'ACTIVO'
         `, [usuarioId]);
         
         const result = rows.rows as [{ total: string, cantidadItems: number }];
