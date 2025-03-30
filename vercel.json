@@ -1,0 +1,19 @@
+{
+    "version": 2,
+    "builds": [
+      {
+        "src": "dist/app.js",
+        "use": "npm run build"
+      }
+    ],
+    "routes": [
+      {
+        "src": "/(.*)",
+        "dest": "dist/routes"
+      }
+    ],
+    "env": {
+      "NODE_ENV": "production"
+    }
+  }
+  
