@@ -8,6 +8,7 @@ const isProduction = process.env.NODE_ENV === 'production';
 // Configuración del pool de conexiones a PostgreSQL
 const pool = new Pool({
   user: process.env.DB_USER || 'postgres',
+  host: process.env.DB_HOST || 'localhost',
   //connectionString: process.env.DB_HOST || 'localhost',
   database: process.env.DB_DATABASE || 'dbtiendaonline',
   password: process.env.DB_PASSWORD || 'postgres',
