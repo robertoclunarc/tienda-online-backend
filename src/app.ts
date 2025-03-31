@@ -32,6 +32,10 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+if (process.env.NODE_ENV !== 'production') {
+  testConnection().catch(console.error);
+}
+
 // Rutas
 app.use('/api/productos', productoRoutes);
 app.use('/api/categorias', categoriaRoutes);
@@ -54,6 +58,11 @@ app.get('/', (req, res) => {
   res.json({ message: 'API Tienda Online - Funcionando correctamente' });
 });
 
+app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+  console.error(err.stack);
+  res.status(500).json({ message: 'Error interno del servidor' });
+});
+
 // Iniciar el servidor
 const startServer = async () => {
   try {
@@ -61,9 +70,12 @@ const startServer = async () => {
     await testConnection();
     
     // Iniciar el servidor
-    app.listen(PORT, () => {
-      console.log(`Servidor corriendo en el puerto ${PORT}`);
+    // Iniciar en modo no serverless
+    if (process.env.NODE_ENV !== 'production') {
+      app.listen(PORT, () => {
+      console.log(`Servidor corriendo en puerto ${PORT}`);
     });
+    }
   } catch (error) {
     console.error('Error al iniciar el servidor:', error);
     process.exit(1);
