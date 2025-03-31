@@ -57,6 +57,7 @@ app.use('/api/productos-imagenes', productosImagenesRoutes);
 app.get('/', (req, res) => {
   res.json({ message: 'API Tienda Online - Funcionando correctamente' });
   testConnection2();
+  testConnection();
 });
 
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {

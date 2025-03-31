@@ -7,11 +7,11 @@ const isProduction = process.env.NODE_ENV === 'production';
 
 // Configuración del pool de conexiones a PostgreSQL
 const pool = new Pool({
-  //user: process.env.DB_USER || 'postgres',
-  connectionString: process.env.DB_HOST || 'localhost',
-  //database: process.env.DB_DATABASE || 'dbtiendaonline',
-  //password: process.env.DB_PASSWORD || 'postgres',
-  //port: parseInt(process.env.DB_PORT || '5432'),
+  user: process.env.DB_USER || 'postgres',
+  //connectionString: process.env.DB_HOST || 'localhost',
+  database: process.env.DB_DATABASE || 'dbtiendaonline',
+  password: process.env.DB_PASSWORD || 'postgres',
+  port: parseInt(process.env.DB_PORT || '5432'),
   max: 15, // Máximo de conexiones en el pool
   idleTimeoutMillis: 30000, // Tiempo máximo que una conexión puede estar inactiva
   connectionTimeoutMillis: isProduction ? 5000 : 2000,
