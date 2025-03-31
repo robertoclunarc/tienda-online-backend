@@ -56,11 +56,13 @@ app.use('/api/productos-imagenes', productosImagenesRoutes);
 // Ruta de prueba
 app.get('/', (req, res) => {
   res.json({ message: 'API Tienda Online - Funcionando correctamente' });
+  testConnection2();
 });
 
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
   console.error(err.stack);
   res.status(500).json({ message: 'Error interno del servidor' });
+  
 });
 
 // Iniciar el servidor
