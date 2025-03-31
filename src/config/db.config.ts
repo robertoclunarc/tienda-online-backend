@@ -12,7 +12,7 @@ const pool = new Pool({
   //connectionString: process.env.DB_HOST || 'localhost',
   database: process.env.DB_DATABASE || 'dbtiendaonline',
   user: process.env.DB_USER || 'postgres',
-  //password: process.env.DB_PASSWORD || 'postgres',
+  password: process.env.DB_PASSWORD || 'postgres',
   
   //max: 15, // Máximo de conexiones en el pool
   //idleTimeoutMillis: 30000, // Tiempo máximo que una conexión puede estar inactiva
