@@ -10,7 +10,7 @@ const pool = new Pool({
   //database: process.env.DB_DATABASE || 'dbtiendaonline',
   //password: process.env.DB_PASSWORD || 'postgres',
   //port: parseInt(process.env.DB_PORT || '5432'),
-  max: 30, // Máximo de conexiones en el pool
+  max: 15, // Máximo de conexiones en el pool
   idleTimeoutMillis: 30000, // Tiempo máximo que una conexión puede estar inactiva
   connectionTimeoutMillis: isProduction ? 5000 : 2000,
   ssl: isProduction ? { rejectUnauthorized: false } : undefined,
