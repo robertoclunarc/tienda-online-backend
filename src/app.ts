@@ -1,7 +1,7 @@
 import express, { Application } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import { testConnection } from './config/db.config';
+import { testConnection, testConnection2 } from './config/db.config';
 
 // Importación de rutas
 import productoRoutes from './routes/producto.routes';
@@ -74,6 +74,7 @@ const startServer = async () => {
     });    
     
     // Probar la conexión a la base de datos
+    await testConnection2();
     await testConnection();
   } catch (error) {
     console.error('Error al iniciar el servidor:', error);

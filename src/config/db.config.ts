@@ -1,8 +1,10 @@
 import { Pool } from 'pg';
 import dotenv from 'dotenv';
+import postgres from 'postgres'
 
 dotenv.config();
 const isProduction = process.env.NODE_ENV === 'production';
+
 // Configuración del pool de conexiones a PostgreSQL
 const pool = new Pool({
   //user: process.env.DB_USER || 'postgres',
@@ -22,6 +24,19 @@ export const testConnection = async (): Promise<void> => {
     const client = await pool.connect();
     console.log('Conexión BD establecida correctamente');
     client.release();
+  } catch (error) {
+    console.error('Error al conectar a PostgreSQL:', error);
+    //throw error;
+  }
+};
+
+export const testConnection2 = async (): Promise<void> => {
+  try {
+    const connectionString = process.env.DB_HOST
+    if (!connectionString) {
+      throw new Error('DATABASE_URL is not defined in the environment variables');
+    }
+  const sql = postgres(connectionString);
   } catch (error) {
     console.error('Error al conectar a PostgreSQL:', error);
     //throw error;
