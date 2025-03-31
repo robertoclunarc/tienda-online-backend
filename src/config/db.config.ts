@@ -24,7 +24,7 @@ export const testConnection = async (): Promise<void> => {
     client.release();
   } catch (error) {
     console.error('Error al conectar a PostgreSQL:', error);
-    throw error;
+    //throw error;
   }
 };
 

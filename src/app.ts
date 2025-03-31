@@ -65,17 +65,16 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
 
 // Iniciar el servidor
 const startServer = async () => {
-  try {
-    // Probar la conexión a la base de datos
-    await testConnection();
-    
+  try { 
     // Iniciar el servidor
     // Iniciar en modo no serverless
-    if (process.env.NODE_ENV !== 'production') {
+    
       app.listen(PORT, () => {
       console.log(`Servidor corriendo en puerto ${PORT}`);
-    });
-    }
+    });    
+    
+    // Probar la conexión a la base de datos
+    await testConnection();
   } catch (error) {
     console.error('Error al iniciar el servidor:', error);
     process.exit(1);
