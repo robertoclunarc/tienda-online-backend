@@ -1,6 +1,6 @@
 import { Pool } from 'pg';
 import dotenv from 'dotenv';
-import postgres from 'postgres'
+//import postgres from 'postgres'
 
 dotenv.config();
 const isProduction = process.env.NODE_ENV === 'production';
@@ -30,7 +30,7 @@ export const testConnection = async (): Promise<void> => {
   }
 };
 
-export const testConnection2 = async (): Promise<void> => {
+/*export const testConnection2 = async (): Promise<void> => {
   try {
     const connectionString = process.env.DB_HOST
     if (connectionString) {
@@ -44,7 +44,7 @@ export const testConnection2 = async (): Promise<void> => {
     console.error('Error al conectar a PostgreSQL en test 2:', error);
     //throw error;
   }
-};
+};*/
 
 export default pool;
 /*
