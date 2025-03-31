@@ -2,11 +2,11 @@
   "name": "backendtienda",
   "version": "1.0.0",
   "main": "dist/app.js",
-  "scripts": {   
-    "preinstall": "npm install",
+  "scripts": {
     "build": "tsc",
     "start": "node dist/app.js",
-    "dev": "ts-node-dev --respawn --transpile-only src/app.ts"    
+    "dev": "ts-node-dev --respawn --transpile-only src/app.ts",
+    "postinstall": "tsc"
   },
   "keywords": [],
   "author": "",
