@@ -35,8 +35,9 @@ export const testConnection2 = async (): Promise<void> => {
     const connectionString = process.env.DB_HOST
     if (connectionString) {
       const sql = postgres(connectionString);
+      const result = await sql`SELECT 1 AS test`;
       console.log('DATABASE_URL', process.env.DB_HOST);
-      console.log('Conexión BD establecida correctamente con postgres');
+      console.log('Conexión 2 con postgres', result);
     }
     
   } catch (error) {
