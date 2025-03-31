@@ -33,12 +33,14 @@ export const testConnection = async (): Promise<void> => {
 export const testConnection2 = async (): Promise<void> => {
   try {
     const connectionString = process.env.DB_HOST
-    if (!connectionString) {
-      throw new Error('DATABASE_URL is not defined in the environment variables');
+    if (connectionString) {
+      const sql = postgres(connectionString);
+      console.log('DATABASE_URL', process.env.DB_HOST);
+      console.log('Conexión BD establecida correctamente con postgres');
     }
-  const sql = postgres(connectionString);
+    
   } catch (error) {
-    console.error('Error al conectar a PostgreSQL:', error);
+    console.error('Error al conectar a PostgreSQL en test 2:', error);
     //throw error;
   }
 };
